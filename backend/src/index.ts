@@ -3,6 +3,8 @@ import cors from 'cors'
 import helmet from 'helmet'
 import morgan from 'morgan'
 import dotenv from 'dotenv'
+import { connectDB, disconnectDB } from './config/database'
+import { runMigrations } from './migrations'
 
 // Load environment variables
 dotenv.config()
@@ -58,11 +60,40 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
   })
 })
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`🚀 Turgus backend server running on port ${PORT}`)
-  console.log(`📊 Health check: http://localhost:${PORT}/health`)
-  console.log(`🔗 API endpoint: http://localhost:${PORT}/api`)
+// Initialize database and start server
+const startServer = async () => {
+  try {
+    // Connect to database
+    await connectDB()
+    
+    // Run database migrations
+    await runMigrations()
+    
+    // Start server
+    app.listen(PORT, () => {
+      console.log(`🚀 Turgus backend server running on port ${PORT}`)
+      console.log(`📊 Health check: http://localhost:${PORT}/health`)
+      console.log(`🔗 API endpoint: http://localhost:${PORT}/api`)
+    })
+  } catch (error) {
+    console.error('❌ Failed to start server:', error)
+    process.exit(1)
+  }
+}
+
+startServer()
+
+// Graceful shutdown
+process.on('SIGINT', async () => {
+  console.log('\n🛑 Received SIGINT, shutting down gracefully...')
+  await disconnectDB()
+  process.exit(0)
+})
+
+process.on('SIGTERM', async () => {
+  console.log('\n🛑 Received SIGTERM, shutting down gracefully...')
+  await disconnectDB()
+  process.exit(0)
 })
 
 export default app

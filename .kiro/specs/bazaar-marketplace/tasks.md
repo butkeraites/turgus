@@ -8,19 +8,19 @@
   - Set up package.json scripts for development workflow
   - _Requirements: 12.1, 12.2_
 
-- [ ] 2. Implement core database models and migrations
-  - [ ] 2.1 Set up PostgreSQL database connection and configuration
+- [x] 2. Implement core database models and migrations
+  - [x] 2.1 Set up PostgreSQL database connection and configuration
     - Configure database connection with environment variables
     - Create database connection utility with connection pooling
     - _Requirements: 13.1, 14.3_
   
-  - [ ] 2.2 Create database schema and migrations
+  - [x] 2.2 Create database schema and migrations
     - Write SQL migrations for users, products, categories, photos, want_lists tables
     - Implement foreign key relationships and constraints
     - Create indexes for performance optimization
     - _Requirements: 1.4, 3.2, 8.2, 9.1, 10.1_
   
-  - [ ] 2.3 Implement TypeScript data models and interfaces
+  - [x] 2.3 Implement TypeScript data models and interfaces
     - Create TypeScript interfaces for all database entities
     - Implement data validation schemas using Zod
     - _Requirements: 3.2, 14.2_
