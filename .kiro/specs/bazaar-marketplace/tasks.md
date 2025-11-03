@@ -228,7 +228,7 @@
     - Add comment moderation for sellers
     - _Requirements: 7.3_
 
-- [ ]* 14. Write comprehensive tests
+- [x] 14. Write comprehensive tests
   - [ ]* 14.1 Create backend API tests
     - Write unit tests for authentication logic
     - Write integration tests for all API endpoints
