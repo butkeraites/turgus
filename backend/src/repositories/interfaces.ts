@@ -69,7 +69,7 @@ export interface IProductRepository {
 // Product Photo Repository Interface
 export interface IProductPhotoRepository {
   create(data: Omit<ProductPhoto, 'id' | 'created_at'>): Promise<ProductPhoto>
-  findById(id: string): Promise<ProductPhoto | null>
+  findPhotoById(id: string): Promise<ProductPhoto | null>
   findByIds(ids: string[]): Promise<ProductPhoto[]>
   findByProduct(productId: string): Promise<ProductPhoto[]>
   assignToProduct(photoIds: string[], productId: string): Promise<void>

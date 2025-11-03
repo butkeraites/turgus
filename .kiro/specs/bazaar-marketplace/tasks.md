@@ -43,20 +43,20 @@
     - Create GET /api/auth/me endpoint for user info
     - _Requirements: 14.1, 14.2, 14.4, 14.5_
 
-- [ ] 4. Implement file upload and media management
-  - [ ] 4.1 Set up image upload infrastructure
+- [x] 4. Implement file upload and media management
+  - [x] 4.1 Set up image upload infrastructure
     - Configure Multer for multipart file uploads
     - Implement Sharp for image processing and optimization
     - Create file storage utilities (local development, GCP production)
     - _Requirements: 1.2, 1.5_
   
-  - [ ] 4.2 Create media API endpoints
+  - [x] 4.2 Create media API endpoints
     - Implement POST /api/media/upload for bulk photo upload
     - Implement GET /api/media/:id for optimized image serving
     - Implement DELETE /api/media/:id for photo deletion
     - _Requirements: 1.1, 1.3, 2.5_
   
-  - [ ] 4.3 Add image optimization and responsive serving
+  - [x] 4.3 Add image optimization and responsive serving
     - Generate multiple image sizes for responsive design
     - Implement WebP conversion with JPEG fallback
     - Add image metadata extraction and storage

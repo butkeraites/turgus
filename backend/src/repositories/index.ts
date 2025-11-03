@@ -2,6 +2,7 @@
 
 import { IRepositoryFactory } from './interfaces'
 import { CategoryRepository } from './category.repository'
+import { ProductPhotoRepository } from './productPhoto.repository'
 
 // Placeholder repositories (to be implemented in future tasks)
 class PlaceholderSellerAccountRepository {
@@ -35,18 +36,7 @@ class PlaceholderProductRepository {
   async getCategories() { throw new Error('Not implemented') }
 }
 
-class PlaceholderProductPhotoRepository {
-  async create() { throw new Error('Not implemented') }
-  async findById() { throw new Error('Not implemented') }
-  async findByIds() { throw new Error('Not implemented') }
-  async findByProduct() { throw new Error('Not implemented') }
-  async assignToProduct() { throw new Error('Not implemented') }
-  async unassignFromProduct() { throw new Error('Not implemented') }
-  async delete() { throw new Error('Not implemented') }
-  async updateSortOrder() { throw new Error('Not implemented') }
-  async getUnassignedPhotos() { throw new Error('Not implemented') }
-  async cleanupUnassignedPhotos() { throw new Error('Not implemented') }
-}
+
 
 class PlaceholderProductViewRepository {
   async create() { throw new Error('Not implemented') }
@@ -76,7 +66,7 @@ class RepositoryFactory implements IRepositoryFactory {
   private _buyerAccount: any
   private _category: CategoryRepository
   private _product: any
-  private _productPhoto: any
+  private _productPhoto: ProductPhotoRepository
   private _productView: any
   private _wantList: any
 
@@ -86,7 +76,7 @@ class RepositoryFactory implements IRepositoryFactory {
     this._buyerAccount = new PlaceholderBuyerAccountRepository()
     this._category = new CategoryRepository()
     this._product = new PlaceholderProductRepository()
-    this._productPhoto = new PlaceholderProductPhotoRepository()
+    this._productPhoto = new ProductPhotoRepository()
     this._productView = new PlaceholderProductViewRepository()
     this._wantList = new PlaceholderWantListRepository()
   }
@@ -124,6 +114,6 @@ class RepositoryFactory implements IRepositoryFactory {
 export const repositories = new RepositoryFactory()
 
 // Export individual repositories and interfaces
-export { CategoryRepository }
+export { CategoryRepository, ProductPhotoRepository }
 export * from './interfaces'
 export * from './base'
