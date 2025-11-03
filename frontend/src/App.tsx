@@ -1,28 +1,61 @@
 
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './contexts/AuthContext';
+import { Header } from './components/layout/Header';
+import { HomePage } from './components/home/HomePage';
+import { AuthPage } from './components/auth/AuthPage';
+import { SellerDashboard } from './components/dashboard/SellerDashboard';
+import { BuyerDashboard } from './components/dashboard/BuyerDashboard';
+import { ProtectedRoute, PublicRoute } from './components/auth/ProtectedRoute';
 
 function App() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <h1 className="text-2xl font-bold text-gray-900">Turgus</h1>
-          </div>
+    <AuthProvider>
+      <Router>
+        <div className="min-h-screen bg-gray-50">
+          <Header />
+          
+          <Routes>
+            {/* Public routes */}
+            <Route path="/" element={<HomePage />} />
+            
+            {/* Auth routes - redirect if already authenticated */}
+            <Route 
+              path="/auth" 
+              element={
+                <PublicRoute>
+                  <AuthPage />
+                </PublicRoute>
+              } 
+            />
+            
+            {/* Protected seller routes */}
+            <Route 
+              path="/seller" 
+              element={
+                <ProtectedRoute requiredUserType="seller">
+                  <SellerDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            
+            {/* Protected buyer routes */}
+            <Route 
+              path="/buyer" 
+              element={
+                <ProtectedRoute requiredUserType="buyer">
+                  <BuyerDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            
+            {/* Catch all route - redirect to home */}
+            <Route path="*" element={<HomePage />} />
+          </Routes>
         </div>
-      </header>
-      
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            Welcome to Turgus Marketplace
-          </h2>
-          <p className="text-lg text-gray-600">
-            Mobile-first bilingual marketplace platform
-          </p>
-        </div>
-      </main>
-    </div>
-  )
+      </Router>
+    </AuthProvider>
+  );
 }
 
-export default App
+export default App;

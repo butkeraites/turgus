@@ -101,20 +101,20 @@
     - Add notification system for seller alerts
     - _Requirements: 8.2, 8.3, 8.4, 8.5_
 
-- [ ] 7. Create frontend authentication components
-  - [ ] 7.1 Build seller login interface
+- [x] 7. Create frontend authentication components
+  - [x] 7.1 Build seller login interface
     - Create seller login form component
     - Implement authentication state management
     - Add login validation and error handling
     - _Requirements: 13.3, 13.4_
   
-  - [ ] 7.2 Build buyer registration and login
+  - [x] 7.2 Build buyer registration and login
     - Create buyer registration form with required fields
     - Implement form validation for name, telephone, address
     - Create buyer login form component
     - _Requirements: 14.1, 14.2, 14.4_
   
-  - [ ] 7.3 Implement authentication routing and guards
+  - [x] 7.3 Implement authentication routing and guards
     - Create protected route components
     - Implement automatic token refresh
     - Add logout functionality
