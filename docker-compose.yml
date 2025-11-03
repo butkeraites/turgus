@@ -1,0 +1,114 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: turgus-postgres
+    environment:
+      POSTGRES_DB: turgus_db
+      POSTGRES_USER: turgus
+      POSTGRES_PASSWORD: turgus_dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U turgus -d turgus_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - turgus-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: turgus-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - turgus-network
+
+  # Backend API
+  app-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: turgus-backend
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      DATABASE_URL: postgresql://turgus:turgus_dev_password@postgres:5432/turgus_db
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: dev-jwt-secret-change-in-production
+      FRONTEND_URL: http://localhost:3000
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - ./uploads:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - turgus-network
+    restart: unless-stopped
+
+  # Frontend App
+  app-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: turgus-frontend
+    environment:
+      VITE_API_URL: http://localhost:3001
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - app-backend
+    networks:
+      - turgus-network
+    restart: unless-stopped
+
+  # Development Database Admin (optional)
+  adminer:
+    image: adminer:4.8.1
+    container_name: turgus-adminer
+    ports:
+      - "8080:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+    depends_on:
+      - postgres
+    networks:
+      - turgus-network
+    profiles:
+      - admin
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  turgus-network:
+    driver: bridge

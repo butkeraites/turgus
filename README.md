@@ -12,16 +12,39 @@ turgus-marketplace/
 └── package.json      # Root package.json for monorepo management
 ```
 
-## Development Setup
+## Quick Start
 
 ### Prerequisites
 
 - Node.js >= 18.0.0
 - npm >= 9.0.0
-- PostgreSQL (for database)
-- Redis (for caching and sessions)
+- Docker & Docker Compose
+- Make (for using Makefile commands)
 
-### Installation
+### One-Command Deployment
+
+Deploy the entire application locally with database:
+
+```bash
+make deploy
+```
+
+This will:
+- Install all dependencies
+- Set up PostgreSQL and Redis databases
+- Build the application
+- Start all services with Docker
+
+### Development Setup
+
+For development with hot-reload:
+
+```bash
+make deploy-dev  # Set up database and install dependencies
+make dev         # Start development servers
+```
+
+### Manual Setup (Alternative)
 
 1. Install all dependencies:
 ```bash
@@ -44,6 +67,31 @@ npm run dev
 npm run dev:frontend  # Frontend on http://localhost:3000
 npm run dev:backend   # Backend on http://localhost:3001
 ```
+
+## Makefile Commands
+
+Run `make help` to see all available commands:
+
+### Quick Commands
+- `make deploy` - 🚀 Full local deployment (install + database + build + start)
+- `make deploy-dev` - 🚀 Development deployment (install + database + dev servers)
+- `make dev` - Start development servers (frontend + backend)
+- `make stop` - Stop all services
+- `make status` - Check status of all services
+- `make logs` - Show application logs
+
+### Database Commands
+- `make db-setup` - Set up database with Docker
+- `make db-reset` - Reset database (drop and recreate)
+- `make db-migrate` - Run database migrations
+- `make db-seed` - Seed database with initial data
+
+### Development Commands
+- `make install` - Install all dependencies
+- `make build` - Build both frontend and backend
+- `make test` - Run all tests
+- `make lint` - Run linting for all projects
+- `make clean` - Clean build artifacts and node_modules
 
 ## Available Scripts
 
@@ -87,6 +135,16 @@ npm run dev:backend   # Backend on http://localhost:3001
 - **Zod** for data validation
 - **Vitest** for testing
 
+## Services
+
+When deployed, the following services will be available:
+
+- **Frontend**: http://localhost:3000 - React application
+- **Backend**: http://localhost:3001 - Express.js API
+- **Database**: localhost:5432 - PostgreSQL database
+- **Cache**: localhost:6379 - Redis cache
+- **Admin Panel**: http://localhost:8080 - Database admin (optional)
+
 ## Features
 
 - 📱 Mobile-first responsive design
@@ -98,6 +156,7 @@ npm run dev:backend   # Backend on http://localhost:3001
 - 🔐 JWT-based authentication
 - 🖼️ Image upload and optimization
 - 🎨 Modern UI with Tailwind CSS
+- 🐳 Docker containerization for easy deployment
 
 ## Development Guidelines
 

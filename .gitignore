@@ -110,3 +110,10 @@ temp/
 
 # Uploaded files
 uploads/
+
+# Docker
+.docker/
+
+# Local environment files
+backend/.env.local
+frontend/.env.local
