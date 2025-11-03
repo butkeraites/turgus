@@ -1,0 +1,136 @@
+# Cloud Build configuration for Turgus
+steps:
+  # Build backend Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build-backend'
+    args:
+      - 'build'
+      - '-f'
+      - 'backend/Dockerfile.prod'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/turgus-backend:$COMMIT_SHA'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/turgus-backend:latest'
+      - './backend'
+    dir: '.'
+
+  # Build frontend Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build-frontend'
+    args:
+      - 'build'
+      - '-f'
+      - 'frontend/Dockerfile.prod'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/turgus-frontend:$COMMIT_SHA'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/turgus-frontend:latest'
+      - './frontend'
+    dir: '.'
+
+  # Push backend image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push-backend'
+    args:
+      - 'push'
+      - 'gcr.io/$PROJECT_ID/turgus-backend:$COMMIT_SHA'
+    waitFor: ['build-backend']
+
+  # Push backend latest tag
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push-backend-latest'
+    args:
+      - 'push'
+      - 'gcr.io/$PROJECT_ID/turgus-backend:latest'
+    waitFor: ['build-backend']
+
+  # Push frontend image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push-frontend'
+    args:
+      - 'push'
+      - 'gcr.io/$PROJECT_ID/turgus-frontend:$COMMIT_SHA'
+    waitFor: ['build-frontend']
+
+  # Push frontend latest tag
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push-frontend-latest'
+    args:
+      - 'push'
+      - 'gcr.io/$PROJECT_ID/turgus-frontend:latest'
+    waitFor: ['build-frontend']
+
+  # Deploy backend to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'deploy-backend'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'turgus-backend-${_ENVIRONMENT}'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/turgus-backend:$COMMIT_SHA'
+      - '--region'
+      - '${_REGION}'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--port'
+      - '3000'
+      - '--memory'
+      - '512Mi'
+      - '--cpu'
+      - '1'
+      - '--max-instances'
+      - '10'
+      - '--set-env-vars'
+      - 'NODE_ENV=production,PORT=3000'
+      - '--set-secrets'
+      - 'DB_PASSWORD=turgus-db-password-${_ENVIRONMENT}:latest,JWT_SECRET=turgus-jwt-secret-${_ENVIRONMENT}:latest'
+    waitFor: ['push-backend']
+
+  # Deploy frontend to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'deploy-frontend'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'turgus-frontend-${_ENVIRONMENT}'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/turgus-frontend:$COMMIT_SHA'
+      - '--region'
+      - '${_REGION}'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--port'
+      - '8080'
+      - '--memory'
+      - '256Mi'
+      - '--cpu'
+      - '1'
+      - '--max-instances'
+      - '5'
+    waitFor: ['push-frontend']
+
+# Substitution variables
+substitutions:
+  _ENVIRONMENT: 'prod'
+  _REGION: 'us-central1'
+
+# Build options
+options:
+  machineType: 'E2_HIGHCPU_8'
+  substitution_option: 'ALLOW_LOOSE'
+  logging: 'CLOUD_LOGGING_ONLY'
+
+# Build timeout
+timeout: '1200s'
+
+# Images to be pushed to Container Registry
+images:
+  - 'gcr.io/$PROJECT_ID/turgus-backend:$COMMIT_SHA'
+  - 'gcr.io/$PROJECT_ID/turgus-backend:latest'
+  - 'gcr.io/$PROJECT_ID/turgus-frontend:$COMMIT_SHA'
+  - 'gcr.io/$PROJECT_ID/turgus-frontend:latest'

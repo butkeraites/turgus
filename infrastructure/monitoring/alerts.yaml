@@ -1,0 +1,175 @@
+# Google Cloud Monitoring Alert Policies for Turgus
+
+# High Error Rate Alert
+- displayName: "Turgus - High Error Rate"
+  documentation:
+    content: "Alert when error rate exceeds 5% over 5 minutes"
+    mimeType: "text/markdown"
+  conditions:
+    - displayName: "Error rate condition"
+      conditionThreshold:
+        filter: 'resource.type="cloud_run_revision" AND resource.labels.service_name=~"turgus-.*"'
+        comparison: COMPARISON_GREATER_THAN
+        thresholdValue: 0.05
+        duration: "300s"
+        aggregations:
+          - alignmentPeriod: "60s"
+            perSeriesAligner: ALIGN_RATE
+            crossSeriesReducer: REDUCE_MEAN
+            groupByFields:
+              - "resource.labels.service_name"
+  alertStrategy:
+    autoClose: "1800s"
+  enabled: true
+  notificationChannels: []
+
+# High Response Time Alert
+- displayName: "Turgus - High Response Time"
+  documentation:
+    content: "Alert when 95th percentile response time exceeds 2 seconds"
+    mimeType: "text/markdown"
+  conditions:
+    - displayName: "Response time condition"
+      conditionThreshold:
+        filter: 'resource.type="cloud_run_revision" AND resource.labels.service_name=~"turgus-.*"'
+        comparison: COMPARISON_GREATER_THAN
+        thresholdValue: 2000
+        duration: "300s"
+        aggregations:
+          - alignmentPeriod: "60s"
+            perSeriesAligner: ALIGN_DELTA
+            crossSeriesReducer: REDUCE_PERCENTILE_95
+            groupByFields:
+              - "resource.labels.service_name"
+  alertStrategy:
+    autoClose: "1800s"
+  enabled: true
+  notificationChannels: []
+
+# High CPU Usage Alert
+- displayName: "Turgus - High CPU Usage"
+  documentation:
+    content: "Alert when CPU usage exceeds 80% for 10 minutes"
+    mimeType: "text/markdown"
+  conditions:
+    - displayName: "CPU usage condition"
+      conditionThreshold:
+        filter: 'resource.type="cloud_run_revision" AND resource.labels.service_name=~"turgus-.*"'
+        comparison: COMPARISON_GREATER_THAN
+        thresholdValue: 0.8
+        duration: "600s"
+        aggregations:
+          - alignmentPeriod: "60s"
+            perSeriesAligner: ALIGN_MEAN
+            crossSeriesReducer: REDUCE_MEAN
+            groupByFields:
+              - "resource.labels.service_name"
+  alertStrategy:
+    autoClose: "1800s"
+  enabled: true
+  notificationChannels: []
+
+# High Memory Usage Alert
+- displayName: "Turgus - High Memory Usage"
+  documentation:
+    content: "Alert when memory usage exceeds 85% for 10 minutes"
+    mimeType: "text/markdown"
+  conditions:
+    - displayName: "Memory usage condition"
+      conditionThreshold:
+        filter: 'resource.type="cloud_run_revision" AND resource.labels.service_name=~"turgus-.*"'
+        comparison: COMPARISON_GREATER_THAN
+        thresholdValue: 0.85
+        duration: "600s"
+        aggregations:
+          - alignmentPeriod: "60s"
+            perSeriesAligner: ALIGN_MEAN
+            crossSeriesReducer: REDUCE_MEAN
+            groupByFields:
+              - "resource.labels.service_name"
+  alertStrategy:
+    autoClose: "1800s"
+  enabled: true
+  notificationChannels: []
+
+# Database Connection Issues
+- displayName: "Turgus - Database Connection Issues"
+  documentation:
+    content: "Alert when database connection errors occur"
+    mimeType: "text/markdown"
+  conditions:
+    - displayName: "Database error condition"
+      conditionThreshold:
+        filter: 'resource.type="cloud_sql_database" AND protoPayload.methodName="cloudsql.instances.connect"'
+        comparison: COMPARISON_GREATER_THAN
+        thresholdValue: 5
+        duration: "300s"
+        aggregations:
+          - alignmentPeriod: "60s"
+            perSeriesAligner: ALIGN_RATE
+            crossSeriesReducer: REDUCE_SUM
+  alertStrategy:
+    autoClose: "1800s"
+  enabled: true
+  notificationChannels: []
+
+# Low Disk Space Alert
+- displayName: "Turgus - Low Disk Space"
+  documentation:
+    content: "Alert when disk usage exceeds 90%"
+    mimeType: "text/markdown"
+  conditions:
+    - displayName: "Disk usage condition"
+      conditionThreshold:
+        filter: 'resource.type="gce_instance"'
+        comparison: COMPARISON_GREATER_THAN
+        thresholdValue: 0.9
+        duration: "300s"
+        aggregations:
+          - alignmentPeriod: "60s"
+            perSeriesAligner: ALIGN_MEAN
+            crossSeriesReducer: REDUCE_MEAN
+  alertStrategy:
+    autoClose: "1800s"
+  enabled: true
+  notificationChannels: []
+
+# Service Unavailable Alert
+- displayName: "Turgus - Service Unavailable"
+  documentation:
+    content: "Alert when service is completely unavailable"
+    mimeType: "text/markdown"
+  conditions:
+    - displayName: "Service availability condition"
+      conditionAbsent:
+        filter: 'resource.type="cloud_run_revision" AND resource.labels.service_name=~"turgus-.*"'
+        duration: "300s"
+        aggregations:
+          - alignmentPeriod: "60s"
+            perSeriesAligner: ALIGN_MEAN
+            crossSeriesReducer: REDUCE_COUNT
+  alertStrategy:
+    autoClose: "1800s"
+  enabled: true
+  notificationChannels: []
+
+# Business Metrics Alerts
+- displayName: "Turgus - Low User Activity"
+  documentation:
+    content: "Alert when user activity drops significantly"
+    mimeType: "text/markdown"
+  conditions:
+    - displayName: "User activity condition"
+      conditionThreshold:
+        filter: 'resource.type="cloud_run_revision" AND jsonPayload.type="business_event"'
+        comparison: COMPARISON_LESS_THAN
+        thresholdValue: 10
+        duration: "3600s"
+        aggregations:
+          - alignmentPeriod: "300s"
+            perSeriesAligner: ALIGN_RATE
+            crossSeriesReducer: REDUCE_SUM
+  alertStrategy:
+    autoClose: "7200s"
+  enabled: true
+  notificationChannels: []

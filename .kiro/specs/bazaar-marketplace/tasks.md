@@ -247,20 +247,20 @@
     - Add mobile-specific interaction tests
     - _Requirements: Complete user journeys_
 
-- [ ] 15. Set up deployment and infrastructure
-  - [ ] 15.1 Configure GCP infrastructure
+- [x] 15. Set up deployment and infrastructure
+  - [x] 15.1 Configure GCP infrastructure
     - Set up Cloud SQL PostgreSQL instance
     - Configure Cloud Storage for image files
     - Set up Cloud Run services for backend
     - _Requirements: All requirements (deployment)_
   
-  - [ ] 15.2 Implement CI/CD pipeline
+  - [x] 15.2 Implement CI/CD pipeline
     - Create Docker containers for frontend and backend
     - Set up Cloud Build for automated deployment
     - Configure environment variables and secrets
     - _Requirements: All requirements (deployment)_
   
-  - [ ] 15.3 Add monitoring and logging
+  - [x] 15.3 Add monitoring and logging
     - Set up Cloud Monitoring for performance tracking
     - Configure error tracking and alerting
     - Add application performance monitoring
