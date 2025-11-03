@@ -5,6 +5,7 @@ import morgan from 'morgan'
 import dotenv from 'dotenv'
 import { connectDB, disconnectDB } from './config/database'
 import { runMigrations } from './migrations'
+import apiRoutes from './routes'
 
 // Load environment variables
 dotenv.config()
@@ -31,17 +32,8 @@ app.get('/health', (_req, res) => {
   })
 })
 
-// API routes placeholder
-app.get('/api', (_req, res) => {
-  res.json({ 
-    message: 'Turgus API Server',
-    version: '1.0.0',
-    endpoints: {
-      health: '/health',
-      api: '/api'
-    }
-  })
-})
+// API routes
+app.use('/api', apiRoutes)
 
 // 404 handler
 app.use('*', (req, res) => {

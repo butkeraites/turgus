@@ -5,7 +5,7 @@
 -- Insert predefined seller account (Requirement 13.1, 13.2)
 -- Password: "paladino0" (hashed with bcrypt)
 INSERT INTO seller_accounts (username, password_hash) VALUES 
-('Bazar dos BUts', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi');
+('Bazar dos BUts', '$2a$12$/SVr/sStahuQx/Ba.R6bNO8KjT.9RihopMkrJgRn82N9GZ7CWg6t2');
 
 -- Insert predefined categories (multilingual support)
 INSERT INTO categories (name, name_en, name_pt) VALUES 

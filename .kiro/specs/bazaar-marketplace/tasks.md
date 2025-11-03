@@ -25,19 +25,19 @@
     - Implement data validation schemas using Zod
     - _Requirements: 3.2, 14.2_
 
-- [ ] 3. Build authentication system
-  - [ ] 3.1 Implement JWT authentication middleware
+- [x] 3. Build authentication system
+  - [x] 3.1 Implement JWT authentication middleware
     - Create JWT token generation and validation utilities
     - Implement authentication middleware for protected routes
     - Set up password hashing with bcrypt
     - _Requirements: 13.2, 13.4, 14.4_
   
-  - [ ] 3.2 Create seller authentication endpoints
+  - [x] 3.2 Create seller authentication endpoints
     - Implement POST /api/auth/seller/login endpoint
     - Create hardcoded seller account validation
     - _Requirements: 13.1, 13.2, 13.3_
   
-  - [ ] 3.3 Create buyer registration and login endpoints
+  - [x] 3.3 Create buyer registration and login endpoints
     - Implement POST /api/auth/buyer/register endpoint with validation
     - Implement POST /api/auth/buyer/login endpoint
     - Create GET /api/auth/me endpoint for user info
