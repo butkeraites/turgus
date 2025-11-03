@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Category } from '../../types/product';
 import { productService } from '../../services/product.service';
 
@@ -64,12 +64,7 @@ export function CategoryMultiSelect({
     }
   };
 
-  const getSelectedCategoryNames = () => {
-    return categories
-      .filter(cat => selectedCategories.includes(cat.id))
-      .map(cat => cat.name)
-      .join(', ');
-  };
+
 
   const filteredCategories = categories.filter(category =>
     category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { PhotoManager } from './PhotoManager';
 import { ProductForm } from './ProductForm';
 import { CreateProductData, ProductWithDetails } from '../../types/product';

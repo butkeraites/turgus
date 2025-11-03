@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ProductWithDetails } from '../../types/product';
 import { productService } from '../../services/product.service';
+import { wantListService } from '../../services/wantList.service';
 import { PhotoGallery } from './PhotoGallery';
 import { LoadingSpinner } from '../shared/LoadingSpinner';
 import { ArrowLeftIcon, HeartIcon } from '@heroicons/react/24/outline';
@@ -37,9 +38,15 @@ export function ProductDetail() {
           // Don't fail the whole component if view tracking fails
         }
         
-        // TODO: Check if product is in user's want list
-        // This will be implemented when want list functionality is added
-        setIsInWantList(false);
+        // Check if product is in user's want list
+        try {
+          const wantList = await wantListService.getBuyerWantList();
+          const isInList = wantList.items.some(item => item.productId === productId);
+          setIsInWantList(isInList);
+        } catch (wantListError) {
+          console.error('Error checking want list:', wantListError);
+          setIsInWantList(false);
+        }
       } catch (err) {
         console.error('Error loading product:', err);
         setError('Failed to load product details. Please try again.');
@@ -56,13 +63,11 @@ export function ProductDetail() {
 
     try {
       setAddingToWantList(true);
-      // TODO: Implement want list API call
-      // await wantListService.addProduct(product.id);
+      await wantListService.addToWantList(product.id);
       setIsInWantList(true);
-      console.log('Added to want list:', product.id);
     } catch (err) {
       console.error('Error adding to want list:', err);
-      // TODO: Show error toast
+      setError('Failed to add product to want list. Please try again.');
     } finally {
       setAddingToWantList(false);
     }
@@ -73,13 +78,17 @@ export function ProductDetail() {
 
     try {
       setAddingToWantList(true);
-      // TODO: Implement want list API call
-      // await wantListService.removeProduct(product.id);
-      setIsInWantList(false);
-      console.log('Removed from want list:', product.id);
+      // Find the want list item ID for this product
+      const wantList = await wantListService.getBuyerWantList();
+      const wantListItem = wantList.items.find(item => item.productId === product.id);
+      
+      if (wantListItem) {
+        await wantListService.removeFromWantList(wantListItem.id);
+        setIsInWantList(false);
+      }
     } catch (err) {
       console.error('Error removing from want list:', err);
-      // TODO: Show error toast
+      setError('Failed to remove product from want list. Please try again.');
     } finally {
       setAddingToWantList(false);
     }

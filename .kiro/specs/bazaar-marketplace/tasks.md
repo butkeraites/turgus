@@ -164,14 +164,14 @@
     - Store view history per user
     - _Requirements: 5.3, 7.5_
 
-- [ ] 10. Build want list management interface
-  - [ ] 10.1 Create buyer want list interface
+- [x] 10. Build want list management interface
+  - [x] 10.1 Create buyer want list interface
     - Build want list display with product details
     - Implement remove product functionality
     - Add total price calculation and item count
     - _Requirements: 9.1, 9.2, 9.4_
   
-  - [ ] 10.2 Build seller order management interface
+  - [x] 10.2 Build seller order management interface
     - Create seller dashboard for viewing all want lists
     - Display buyer information and selected products
     - Implement want list and individual item cancellation

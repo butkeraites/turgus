@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { PhotoManager } from '../seller/PhotoManager';
 import { ProductCreationWorkflow } from '../seller/ProductCreationWorkflow';
 import { ProductManagement } from '../seller/ProductManagement';
+import { OrderManagement } from '../seller/OrderManagement';
 import { ProductWithDetails } from '../../types/product';
 
 type DashboardView = 'overview' | 'photos' | 'products' | 'orders' | 'create-product';
@@ -85,9 +86,7 @@ export function SellerDashboard() {
                 Back to Dashboard
               </button>
             </div>
-            <div className="text-center py-12">
-              <p className="text-gray-500">Order management coming soon...</p>
-            </div>
+            <OrderManagement />
           </div>
         );
       

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { UploadedPhoto } from '../../types/media';
 import { mediaService } from '../../services/media.service';
 

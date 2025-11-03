@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { CategoryMultiSelect } from './CategoryMultiSelect';
-import { CreateProductData, UpdateProductData } from '../../types/product';
+import { CreateProductData } from '../../types/product';
 
 interface ProductFormProps {
   initialData?: Partial<CreateProductData>;
