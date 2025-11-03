@@ -1,0 +1,37 @@
+{
+  "buttons": {
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "back": "Voltar",
+    "next": "Próximo",
+    "previous": "Anterior",
+    "submit": "Enviar",
+    "confirm": "Confirmar",
+    "close": "Fechar",
+    "login": "Entrar",
+    "logout": "Sair",
+    "register": "Registrar"
+  },
+  "navigation": {
+    "home": "Início",
+    "products": "Produtos",
+    "profile": "Perfil",
+    "dashboard": "Painel",
+    "wantList": "Lista de Desejos"
+  },
+  "status": {
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso",
+    "noData": "Nenhum dado encontrado",
+    "tryAgain": "Tentar novamente"
+  },
+  "forms": {
+    "required": "Campo obrigatório",
+    "invalid": "Valor inválido",
+    "tooShort": "Muito curto",
+    "tooLong": "Muito longo"
+  }
+}

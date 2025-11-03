@@ -177,20 +177,20 @@
     - Implement want list and individual item cancellation
     - _Requirements: 10.1, 10.2, 10.3, 10.4_
 
-- [ ] 11. Implement internationalization system
-  - [ ] 11.1 Set up i18next configuration
+- [x] 11. Implement internationalization system
+  - [x] 11.1 Set up i18next configuration
     - Configure i18next with Portuguese and English
     - Create translation namespace structure
     - Set Portuguese as default language
     - _Requirements: 11.1, 11.4_
   
-  - [ ] 11.2 Create language switching functionality
+  - [x] 11.2 Create language switching functionality
     - Build language toggle component
     - Implement dynamic language switching
     - Add persistent language preference storage
     - _Requirements: 11.2, 11.3, 11.4_
   
-  - [ ] 11.3 Add translations for all interface elements
+  - [x] 11.3 Add translations for all interface elements
     - Create Portuguese translations for all components
     - Create English translations for all components
     - Support multilingual text input for products and comments

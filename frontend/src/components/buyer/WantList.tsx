@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { TrashIcon, ShoppingBagIcon } from '@heroicons/react/24/outline';
 import { wantListService } from '../../services/wantList.service';
 import { WantList as WantListType } from '../../types/wantList';
 import { LoadingSpinner } from '../shared/LoadingSpinner';
 
 export function WantList() {
+  const { t } = useTranslation('buyer');
   const [wantList, setWantList] = useState<WantListType | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +24,7 @@ export function WantList() {
       setWantList(data);
     } catch (err) {
       console.error('Error loading want list:', err);
-      setError('Failed to load want list');
+      setError(t('common:status.error'));
     } finally {
       setLoading(false);
     }
@@ -37,7 +39,7 @@ export function WantList() {
       await loadWantList();
     } catch (err) {
       console.error('Error removing item:', err);
-      setError('Failed to remove item from want list');
+      setError(t('wantList.itemRemoved'));
     } finally {
       setRemovingItems(prev => {
         const newSet = new Set(prev);
@@ -80,7 +82,7 @@ export function WantList() {
     return (
       <div className="text-center py-12">
         <ShoppingBagIcon className="mx-auto h-12 w-12 text-gray-400" />
-        <h3 className="mt-2 text-sm font-medium text-gray-900">No items in your want list</h3>
+        <h3 className="mt-2 text-sm font-medium text-gray-900">{t('wantList.empty')}</h3>
         <p className="mt-1 text-sm text-gray-500">
           Start browsing products and add items you're interested in.
         </p>
@@ -94,16 +96,16 @@ export function WantList() {
       <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
         <div className="flex justify-between items-center">
           <div>
-            <h3 className="text-lg font-medium text-indigo-900">Your Want List</h3>
+            <h3 className="text-lg font-medium text-indigo-900">{t('wantList.title')}</h3>
             <p className="text-sm text-indigo-700">
-              {wantList.itemCount} {wantList.itemCount === 1 ? 'item' : 'items'} selected
+              {t('wantList.items', { count: wantList.itemCount })}
             </p>
           </div>
           <div className="text-right">
             <p className="text-2xl font-bold text-indigo-900">
               {formatPrice(wantList.totalPrice)}
             </p>
-            <p className="text-sm text-indigo-700">Total</p>
+            <p className="text-sm text-indigo-700">{t('wantList.total', { amount: formatPrice(wantList.totalPrice) })}</p>
           </div>
         </div>
       </div>
@@ -126,7 +128,7 @@ export function WantList() {
                   />
                 ) : (
                   <div className="w-20 h-20 bg-gray-200 rounded-md flex items-center justify-center">
-                    <span className="text-gray-400 text-xs">No image</span>
+                    <span className="text-gray-400 text-xs">{t('common:status.noData')}</span>
                   </div>
                 )}
               </div>
@@ -169,7 +171,7 @@ export function WantList() {
                   onClick={() => handleRemoveItem(item.id)}
                   disabled={removingItems.has(item.id)}
                   className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md transition-colors disabled:opacity-50"
-                  title="Remove from want list"
+                  title={t('wantList.removeItem')}
                 >
                   {removingItems.has(item.id) ? (
                     <LoadingSpinner size="sm" />

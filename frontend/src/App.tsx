@@ -1,6 +1,7 @@
 
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
+import { LanguageProvider } from './contexts/LanguageContext';
 import { Header } from './components/layout/Header';
 import { HomePage } from './components/home/HomePage';
 import { AuthPage } from './components/auth/AuthPage';
@@ -12,7 +13,8 @@ import { ProtectedRoute, PublicRoute } from './components/auth/ProtectedRoute';
 function App() {
   return (
     <AuthProvider>
-      <Router>
+      <LanguageProvider>
+        <Router>
         <div className="min-h-screen bg-gray-50">
           <Header />
           
@@ -62,7 +64,8 @@ function App() {
             <Route path="*" element={<HomePage />} />
           </Routes>
         </div>
-      </Router>
+        </Router>
+      </LanguageProvider>
     </AuthProvider>
   );
 }

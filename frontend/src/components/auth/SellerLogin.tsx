@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface SellerLoginProps {
@@ -8,6 +9,7 @@ interface SellerLoginProps {
 
 export function SellerLogin({ onSuccess, onCancel }: SellerLoginProps) {
   const { login, isLoading } = useAuth();
+  const { t } = useTranslation('auth');
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -20,11 +22,11 @@ export function SellerLogin({ onSuccess, onCancel }: SellerLoginProps) {
 
     // Validation
     if (!formData.username.trim()) {
-      setError('Username is required');
+      setError(t('seller.username') + ' ' + t('common:forms.required'));
       return;
     }
     if (!formData.password) {
-      setError('Password is required');
+      setError(t('seller.password') + ' ' + t('common:forms.required'));
       return;
     }
 
@@ -32,7 +34,7 @@ export function SellerLogin({ onSuccess, onCancel }: SellerLoginProps) {
       await login(formData, 'seller');
       onSuccess?.();
     } catch (err: any) {
-      const errorMessage = err.response?.data?.error?.message || 'Login failed. Please check your credentials.';
+      const errorMessage = err.response?.data?.error?.message || t('errors.loginFailed');
       setError(errorMessage);
     }
   };
@@ -54,7 +56,7 @@ export function SellerLogin({ onSuccess, onCancel }: SellerLoginProps) {
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Seller Login
+            {t('seller.title')}
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             Access your seller dashboard
@@ -65,7 +67,7 @@ export function SellerLogin({ onSuccess, onCancel }: SellerLoginProps) {
           <div className="space-y-4">
             <div>
               <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                Username
+                {t('seller.username')}
               </label>
               <input
                 id="username"
@@ -75,14 +77,14 @@ export function SellerLogin({ onSuccess, onCancel }: SellerLoginProps) {
                 value={formData.username}
                 onChange={handleChange}
                 className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Enter your username"
+                placeholder={t('seller.username')}
                 disabled={isLoading}
               />
             </div>
             
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
+                {t('seller.password')}
               </label>
               <input
                 id="password"
@@ -92,7 +94,7 @@ export function SellerLogin({ onSuccess, onCancel }: SellerLoginProps) {
                 value={formData.password}
                 onChange={handleChange}
                 className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Enter your password"
+                placeholder={t('seller.password')}
                 disabled={isLoading}
               />
             </div>
@@ -113,10 +115,10 @@ export function SellerLogin({ onSuccess, onCancel }: SellerLoginProps) {
               {isLoading ? (
                 <div className="flex items-center">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Signing in...
+                  {t('common:status.loading')}
                 </div>
               ) : (
-                'Sign in'
+                t('seller.loginButton')
               )}
             </button>
             
@@ -127,7 +129,7 @@ export function SellerLogin({ onSuccess, onCancel }: SellerLoginProps) {
                 disabled={isLoading}
                 className="w-full flex justify-center py-2 px-4 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Cancel
+                {t('common:buttons.cancel')}
               </button>
             )}
           </div>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CategoryMultiSelect } from './CategoryMultiSelect';
 import { CreateProductData } from '../../types/product';
 
@@ -32,8 +33,9 @@ export function ProductForm({
   onSubmit,
   onCancel,
   isLoading = false,
-  submitLabel = 'Create Product'
+  submitLabel
 }: ProductFormProps) {
+  const { t } = useTranslation('seller');
   const [formData, setFormData] = useState<FormData>({
     title: initialData?.title || '',
     description: initialData?.description || '',
@@ -49,29 +51,29 @@ export function ProductForm({
 
     // Title validation
     if (!formData.title.trim()) {
-      newErrors.title = 'Title is required';
+      newErrors.title = t('product.form.title') + ' ' + t('common:forms.required');
     } else if (formData.title.length > 255) {
-      newErrors.title = 'Title must be less than 255 characters';
+      newErrors.title = t('common:forms.tooLong');
     }
 
     // Description validation
     if (!formData.description.trim()) {
-      newErrors.description = 'Description is required';
+      newErrors.description = t('product.form.description') + ' ' + t('common:forms.required');
     }
 
     // Price validation
     if (!formData.price.trim()) {
-      newErrors.price = 'Price is required';
+      newErrors.price = t('product.form.price') + ' ' + t('common:forms.required');
     } else {
       const priceNum = parseFloat(formData.price);
       if (isNaN(priceNum) || priceNum <= 0) {
-        newErrors.price = 'Price must be a positive number';
+        newErrors.price = t('common:forms.invalid');
       }
     }
 
     // Categories validation
     if (formData.category_ids.length === 0) {
-      newErrors.category_ids = 'At least one category is required';
+      newErrors.category_ids = t('product.form.categories') + ' ' + t('common:forms.required');
     }
 
     // Photos validation
@@ -142,7 +144,7 @@ export function ProductForm({
       {/* Title */}
       <div>
         <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-          Product Title <span className="text-red-500">*</span>
+          {t('product.form.title')} <span className="text-red-500">*</span>
         </label>
         <input
           type="text"
@@ -152,7 +154,7 @@ export function ProductForm({
           className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 ${
             errors.title ? 'border-red-500' : 'border-gray-300'
           }`}
-          placeholder="Enter product title..."
+          placeholder={t('product.form.title')}
           maxLength={255}
         />
         {errors.title && <p className="mt-1 text-sm text-red-600">{errors.title}</p>}
@@ -164,7 +166,7 @@ export function ProductForm({
       {/* Description */}
       <div>
         <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-          Description <span className="text-red-500">*</span>
+          {t('product.form.description')} <span className="text-red-500">*</span>
         </label>
         <textarea
           id="description"
@@ -174,7 +176,7 @@ export function ProductForm({
           className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 ${
             errors.description ? 'border-red-500' : 'border-gray-300'
           }`}
-          placeholder="Describe your product in detail..."
+          placeholder={t('product.form.description')}
         />
         {errors.description && <p className="mt-1 text-sm text-red-600">{errors.description}</p>}
       </div>
@@ -182,7 +184,7 @@ export function ProductForm({
       {/* Price */}
       <div>
         <label htmlFor="price" className="block text-sm font-medium text-gray-700">
-          Price (€) <span className="text-red-500">*</span>
+          {t('product.form.price')} (€) <span className="text-red-500">*</span>
         </label>
         <div className="mt-1 relative rounded-md shadow-sm">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -213,16 +215,16 @@ export function ProductForm({
       {/* Selected Photos Summary */}
       <div>
         <label className="block text-sm font-medium text-gray-700">
-          Selected Photos <span className="text-red-500">*</span>
+          {t('upload.selectedCount', { count: selectedPhotos.length })} <span className="text-red-500">*</span>
         </label>
         <div className={`mt-1 p-3 border rounded-md ${
           errors.photo_ids ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-gray-50'
         }`}>
           {selectedPhotos.length === 0 ? (
-            <p className="text-sm text-gray-500">No photos selected</p>
+            <p className="text-sm text-gray-500">{t('upload.selectedCount', { count: 0 })}</p>
           ) : (
             <p className="text-sm text-gray-700">
-              {selectedPhotos.length} photo{selectedPhotos.length !== 1 ? 's' : ''} selected
+              {t('upload.selectedCount', { count: selectedPhotos.length })}
             </p>
           )}
         </div>
@@ -237,7 +239,7 @@ export function ProductForm({
           disabled={isSubmitting || isLoading}
           className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Cancel
+          {t('common:buttons.cancel')}
         </button>
         <button
           type="submit"
@@ -247,7 +249,7 @@ export function ProductForm({
           {(isSubmitting || isLoading) && (
             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
           )}
-          {submitLabel}
+          {submitLabel || t('product.form.createProduct')}
         </button>
       </div>
     </form>

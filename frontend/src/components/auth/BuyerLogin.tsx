@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface BuyerLoginProps {
@@ -9,6 +10,7 @@ interface BuyerLoginProps {
 
 export function BuyerLogin({ onSuccess, onCancel, onSwitchToRegister }: BuyerLoginProps) {
   const { login, isLoading } = useAuth();
+  const { t } = useTranslation('auth');
   const [formData, setFormData] = useState({
     name: '',
     password: '',
@@ -21,11 +23,11 @@ export function BuyerLogin({ onSuccess, onCancel, onSwitchToRegister }: BuyerLog
 
     // Validation
     if (!formData.name.trim()) {
-      setError('Name is required');
+      setError(t('buyer.name') + ' ' + t('common:forms.required'));
       return;
     }
     if (!formData.password) {
-      setError('Password is required');
+      setError(t('buyer.password') + ' ' + t('common:forms.required'));
       return;
     }
 
@@ -33,7 +35,7 @@ export function BuyerLogin({ onSuccess, onCancel, onSwitchToRegister }: BuyerLog
       await login(formData, 'buyer');
       onSuccess?.();
     } catch (err: any) {
-      const errorMessage = err.response?.data?.error?.message || 'Login failed. Please check your credentials.';
+      const errorMessage = err.response?.data?.error?.message || t('errors.loginFailed');
       setError(errorMessage);
     }
   };
@@ -55,7 +57,7 @@ export function BuyerLogin({ onSuccess, onCancel, onSwitchToRegister }: BuyerLog
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Buyer Login
+            {t('buyer.loginTitle')}
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             Sign in to your buyer account
@@ -66,7 +68,7 @@ export function BuyerLogin({ onSuccess, onCancel, onSwitchToRegister }: BuyerLog
           <div className="space-y-4">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                Name
+                {t('buyer.name')}
               </label>
               <input
                 id="name"
@@ -76,14 +78,14 @@ export function BuyerLogin({ onSuccess, onCancel, onSwitchToRegister }: BuyerLog
                 value={formData.name}
                 onChange={handleChange}
                 className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Enter your name"
+                placeholder={t('buyer.name')}
                 disabled={isLoading}
               />
             </div>
             
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
+                {t('buyer.password')}
               </label>
               <input
                 id="password"
@@ -93,7 +95,7 @@ export function BuyerLogin({ onSuccess, onCancel, onSwitchToRegister }: BuyerLog
                 value={formData.password}
                 onChange={handleChange}
                 className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Enter your password"
+                placeholder={t('buyer.password')}
                 disabled={isLoading}
               />
             </div>
@@ -114,10 +116,10 @@ export function BuyerLogin({ onSuccess, onCancel, onSwitchToRegister }: BuyerLog
               {isLoading ? (
                 <div className="flex items-center">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Signing in...
+                  {t('common:status.loading')}
                 </div>
               ) : (
-                'Sign in'
+                t('buyer.loginButton')
               )}
             </button>
             
@@ -129,7 +131,7 @@ export function BuyerLogin({ onSuccess, onCancel, onSwitchToRegister }: BuyerLog
                   disabled={isLoading}
                   className="w-full flex justify-center py-2 px-4 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Need an account? Register
+                  {t('buyer.switchToRegister')}
                 </button>
               )}
               
@@ -140,7 +142,7 @@ export function BuyerLogin({ onSuccess, onCancel, onSwitchToRegister }: BuyerLog
                   disabled={isLoading}
                   className="w-full flex justify-center py-2 px-4 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Cancel
+                  {t('common:buttons.cancel')}
                 </button>
               )}
             </div>

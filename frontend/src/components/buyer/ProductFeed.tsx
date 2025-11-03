@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ProductWithDetails, ProductFilters } from '../../types/product';
 import { productService } from '../../services/product.service';
 import { ProductCard } from './ProductCard';
@@ -9,6 +10,7 @@ interface ProductFeedProps {
 }
 
 export function ProductFeed({ filters }: ProductFeedProps) {
+  const { t } = useTranslation('buyer');
   const [products, setProducts] = useState<ProductWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -44,7 +46,7 @@ export function ProductFeed({ filters }: ProductFeedProps) {
       setPage(pageNum);
     } catch (err) {
       console.error('Error loading products:', err);
-      setError('Failed to load products. Please try again.');
+      setError(t('common:status.error'));
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -113,7 +115,7 @@ export function ProductFeed({ filters }: ProductFeedProps) {
   if (products.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">No products found.</p>
+        <p className="text-gray-500">{t('feed.noProducts')}</p>
       </div>
     );
   }

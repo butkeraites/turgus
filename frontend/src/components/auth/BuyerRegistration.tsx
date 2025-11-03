@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface BuyerRegistrationProps {
@@ -9,6 +10,7 @@ interface BuyerRegistrationProps {
 
 export function BuyerRegistration({ onSuccess, onCancel, onSwitchToLogin }: BuyerRegistrationProps) {
   const { register, isLoading } = useAuth();
+  const { t } = useTranslation('auth');
   const [formData, setFormData] = useState({
     name: '',
     telephone: '',
@@ -22,21 +24,21 @@ export function BuyerRegistration({ onSuccess, onCancel, onSwitchToLogin }: Buye
     const newErrors: Record<string, string> = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
+      newErrors.name = t('buyer.name') + ' ' + t('common:forms.required');
     }
 
     if (!formData.telephone.trim()) {
-      newErrors.telephone = 'Telephone is required';
+      newErrors.telephone = t('buyer.telephone') + ' ' + t('common:forms.required');
     } else if (!/^\+?[\d\s\-\(\)]+$/.test(formData.telephone)) {
       newErrors.telephone = 'Please enter a valid telephone number';
     }
 
     if (!formData.address.trim()) {
-      newErrors.address = 'Address is required';
+      newErrors.address = t('buyer.address') + ' ' + t('common:forms.required');
     }
 
     if (!formData.password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = t('buyer.password') + ' ' + t('common:forms.required');
     } else if (formData.password.length < 6) {
       newErrors.password = 'Password must be at least 6 characters';
     }
@@ -65,7 +67,7 @@ export function BuyerRegistration({ onSuccess, onCancel, onSwitchToLogin }: Buye
       });
       onSuccess?.();
     } catch (err: any) {
-      const errorMessage = err.response?.data?.error?.message || 'Registration failed. Please try again.';
+      const errorMessage = err.response?.data?.error?.message || t('errors.registrationFailed');
       setErrors({ general: errorMessage });
     }
   };
@@ -91,7 +93,7 @@ export function BuyerRegistration({ onSuccess, onCancel, onSwitchToLogin }: Buye
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Create Buyer Account
+            {t('buyer.registerTitle')}
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             Join Turgus to start shopping
@@ -102,7 +104,7 @@ export function BuyerRegistration({ onSuccess, onCancel, onSwitchToLogin }: Buye
           <div className="space-y-4">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                Full Name *
+                {t('buyer.name')} *
               </label>
               <input
                 id="name"
@@ -114,7 +116,7 @@ export function BuyerRegistration({ onSuccess, onCancel, onSwitchToLogin }: Buye
                 className={`mt-1 appearance-none relative block w-full px-3 py-2 border ${
                   errors.name ? 'border-red-300' : 'border-gray-300'
                 } placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
-                placeholder="Enter your full name"
+                placeholder={t('buyer.name')}
                 disabled={isLoading}
               />
               {errors.name && (
@@ -124,7 +126,7 @@ export function BuyerRegistration({ onSuccess, onCancel, onSwitchToLogin }: Buye
             
             <div>
               <label htmlFor="telephone" className="block text-sm font-medium text-gray-700">
-                Telephone *
+                {t('buyer.telephone')} *
               </label>
               <input
                 id="telephone"
@@ -136,7 +138,7 @@ export function BuyerRegistration({ onSuccess, onCancel, onSwitchToLogin }: Buye
                 className={`mt-1 appearance-none relative block w-full px-3 py-2 border ${
                   errors.telephone ? 'border-red-300' : 'border-gray-300'
                 } placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
-                placeholder="Enter your telephone number"
+                placeholder={t('buyer.telephone')}
                 disabled={isLoading}
               />
               {errors.telephone && (
@@ -146,7 +148,7 @@ export function BuyerRegistration({ onSuccess, onCancel, onSwitchToLogin }: Buye
             
             <div>
               <label htmlFor="address" className="block text-sm font-medium text-gray-700">
-                Address *
+                {t('buyer.address')} *
               </label>
               <textarea
                 id="address"
@@ -158,7 +160,7 @@ export function BuyerRegistration({ onSuccess, onCancel, onSwitchToLogin }: Buye
                 className={`mt-1 appearance-none relative block w-full px-3 py-2 border ${
                   errors.address ? 'border-red-300' : 'border-gray-300'
                 } placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
-                placeholder="Enter your full address"
+                placeholder={t('buyer.address')}
                 disabled={isLoading}
               />
               {errors.address && (
@@ -168,7 +170,7 @@ export function BuyerRegistration({ onSuccess, onCancel, onSwitchToLogin }: Buye
             
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password *
+                {t('buyer.password')} *
               </label>
               <input
                 id="password"
@@ -180,7 +182,7 @@ export function BuyerRegistration({ onSuccess, onCancel, onSwitchToLogin }: Buye
                 className={`mt-1 appearance-none relative block w-full px-3 py-2 border ${
                   errors.password ? 'border-red-300' : 'border-gray-300'
                 } placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
-                placeholder="Create a password (min. 6 characters)"
+                placeholder={t('buyer.password')}
                 disabled={isLoading}
               />
               {errors.password && (
@@ -190,7 +192,7 @@ export function BuyerRegistration({ onSuccess, onCancel, onSwitchToLogin }: Buye
             
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                Confirm Password *
+                {t('buyer.password')} *
               </label>
               <input
                 id="confirmPassword"
@@ -202,7 +204,7 @@ export function BuyerRegistration({ onSuccess, onCancel, onSwitchToLogin }: Buye
                 className={`mt-1 appearance-none relative block w-full px-3 py-2 border ${
                   errors.confirmPassword ? 'border-red-300' : 'border-gray-300'
                 } placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
-                placeholder="Confirm your password"
+                placeholder={t('buyer.password')}
                 disabled={isLoading}
               />
               {errors.confirmPassword && (
@@ -226,10 +228,10 @@ export function BuyerRegistration({ onSuccess, onCancel, onSwitchToLogin }: Buye
               {isLoading ? (
                 <div className="flex items-center">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Creating account...
+                  {t('common:status.loading')}
                 </div>
               ) : (
-                'Create Account'
+                t('buyer.registerButton')
               )}
             </button>
             
@@ -241,7 +243,7 @@ export function BuyerRegistration({ onSuccess, onCancel, onSwitchToLogin }: Buye
                   disabled={isLoading}
                   className="w-full flex justify-center py-2 px-4 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Already have an account? Sign in
+                  {t('buyer.switchToLogin')}
                 </button>
               )}
               
@@ -252,7 +254,7 @@ export function BuyerRegistration({ onSuccess, onCancel, onSwitchToLogin }: Buye
                   disabled={isLoading}
                   className="w-full flex justify-center py-2 px-4 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Cancel
+                  {t('common:buttons.cancel')}
                 </button>
               )}
             </div>

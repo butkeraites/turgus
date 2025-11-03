@@ -1,0 +1,55 @@
+{
+  "feed": {
+    "title": "Product Feed",
+    "filters": "Filters",
+    "sort": "Sort",
+    "sortBy": {
+      "newest": "Newest",
+      "oldest": "Oldest",
+      "priceLow": "Price: Low to High",
+      "priceHigh": "Price: High to Low"
+    },
+    "filterBy": {
+      "all": "All",
+      "available": "Available",
+      "sold": "Sold",
+      "viewed": "Viewed",
+      "notViewed": "Not Viewed"
+    },
+    "categories": "Categories",
+    "noProducts": "No products found",
+    "loadMore": "Load more"
+  },
+  "product": {
+    "details": "Product Details",
+    "price": "Price",
+    "description": "Description",
+    "categories": "Categories",
+    "wantThis": "I want this",
+    "removeFromWantList": "Remove from list",
+    "addedToWantList": "Added to want list",
+    "removedFromWantList": "Removed from want list",
+    "unavailable": "Unavailable",
+    "sold": "Sold",
+    "reserved": "Reserved",
+    "comments": "Comments",
+    "addComment": "Add comment",
+    "noComments": "No comments yet"
+  },
+  "wantList": {
+    "title": "My Want List",
+    "empty": "Your want list is empty",
+    "items": "{{count}} item(s)",
+    "total": "Total: R$ {{amount}}",
+    "removeItem": "Remove item",
+    "clearAll": "Clear all",
+    "itemRemoved": "Item removed from list"
+  },
+  "dashboard": {
+    "title": "Buyer Dashboard",
+    "welcomeMessage": "Welcome, {{name}}!",
+    "browseProducts": "Browse Products",
+    "myWantList": "My Want List",
+    "recentlyViewed": "Recently Viewed"
+  }
+}

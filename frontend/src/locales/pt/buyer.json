@@ -1,0 +1,55 @@
+{
+  "feed": {
+    "title": "Feed de Produtos",
+    "filters": "Filtros",
+    "sort": "Ordenar",
+    "sortBy": {
+      "newest": "Mais recentes",
+      "oldest": "Mais antigos",
+      "priceLow": "Menor preço",
+      "priceHigh": "Maior preço"
+    },
+    "filterBy": {
+      "all": "Todos",
+      "available": "Disponíveis",
+      "sold": "Vendidos",
+      "viewed": "Visualizados",
+      "notViewed": "Não visualizados"
+    },
+    "categories": "Categorias",
+    "noProducts": "Nenhum produto encontrado",
+    "loadMore": "Carregar mais"
+  },
+  "product": {
+    "details": "Detalhes do Produto",
+    "price": "Preço",
+    "description": "Descrição",
+    "categories": "Categorias",
+    "wantThis": "Quero este produto",
+    "removeFromWantList": "Remover da lista",
+    "addedToWantList": "Adicionado à lista de desejos",
+    "removedFromWantList": "Removido da lista de desejos",
+    "unavailable": "Indisponível",
+    "sold": "Vendido",
+    "reserved": "Reservado",
+    "comments": "Comentários",
+    "addComment": "Adicionar comentário",
+    "noComments": "Nenhum comentário ainda"
+  },
+  "wantList": {
+    "title": "Minha Lista de Desejos",
+    "empty": "Sua lista de desejos está vazia",
+    "items": "{{count}} item(s)",
+    "total": "Total: R$ {{amount}}",
+    "removeItem": "Remover item",
+    "clearAll": "Limpar tudo",
+    "itemRemoved": "Item removido da lista"
+  },
+  "dashboard": {
+    "title": "Painel do Comprador",
+    "welcomeMessage": "Bem-vindo, {{name}}!",
+    "browseProducts": "Navegar Produtos",
+    "myWantList": "Minha Lista de Desejos",
+    "recentlyViewed": "Visualizados Recentemente"
+  }
+}

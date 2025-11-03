@@ -1,0 +1,62 @@
+{
+  "upload": {
+    "title": "Upload de Fotos",
+    "instructions": "Arraste e solte suas fotos aqui ou clique para selecionar",
+    "dragActive": "Solte as fotos aqui",
+    "maxFiles": "Máximo de {{count}} arquivos",
+    "acceptedFormats": "Formatos aceitos: JPEG, PNG, WebP",
+    "uploading": "Enviando...",
+    "uploadSuccess": "Upload realizado com sucesso!",
+    "uploadError": "Erro no upload",
+    "selectPhotos": "Selecionar Fotos",
+    "selectedCount": "{{count}} foto(s) selecionada(s)"
+  },
+  "product": {
+    "form": {
+      "title": "Título do Produto",
+      "description": "Descrição",
+      "price": "Preço",
+      "categories": "Categorias",
+      "selectCategories": "Selecionar categorias",
+      "createProduct": "Criar Produto",
+      "updateProduct": "Atualizar Produto",
+      "publishProduct": "Publicar Produto",
+      "unpublishProduct": "Despublicar Produto"
+    },
+    "status": {
+      "draft": "Rascunho",
+      "available": "Disponível",
+      "reserved": "Reservado",
+      "sold": "Vendido"
+    },
+    "actions": {
+      "publish": "Publicar",
+      "unpublish": "Despublicar",
+      "edit": "Editar",
+      "delete": "Excluir"
+    }
+  },
+  "dashboard": {
+    "title": "Painel do Vendedor",
+    "stats": {
+      "totalProducts": "Total de Produtos",
+      "availableProducts": "Produtos Disponíveis",
+      "reservedProducts": "Produtos Reservados",
+      "soldProducts": "Produtos Vendidos"
+    },
+    "recentActivity": "Atividade Recente",
+    "manageProducts": "Gerenciar Produtos",
+    "viewOrders": "Ver Pedidos"
+  },
+  "orders": {
+    "title": "Gerenciamento de Pedidos",
+    "wantLists": "Listas de Desejos",
+    "buyer": "Comprador",
+    "items": "Itens",
+    "total": "Total",
+    "actions": "Ações",
+    "cancelOrder": "Cancelar Pedido",
+    "removeItem": "Remover Item",
+    "noOrders": "Nenhum pedido encontrado"
+  }
+}

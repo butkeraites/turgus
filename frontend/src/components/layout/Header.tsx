@@ -1,9 +1,12 @@
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import LanguageToggle from '../shared/LanguageToggle';
 
 export function Header() {
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation('common');
 
   const handleLogout = () => {
     logout();
@@ -35,6 +38,8 @@ export function Header() {
           </button>
           
           <div className="flex items-center space-x-4">
+            <LanguageToggle />
+            
             {isAuthenticated && user ? (
               <>
                 <div className="text-sm text-gray-600">
@@ -47,7 +52,7 @@ export function Header() {
                   onClick={handleLogout}
                   className="text-sm font-medium text-gray-700 hover:text-indigo-600 transition-colors"
                 >
-                  Logout
+                  {t('buttons.logout')}
                 </button>
               </>
             ) : (
@@ -55,7 +60,7 @@ export function Header() {
                 onClick={handleLogin}
                 className="text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-md transition-colors"
               >
-                Sign In
+                {t('buttons.login')}
               </button>
             )}
           </div>

@@ -1,0 +1,62 @@
+{
+  "upload": {
+    "title": "Photo Upload",
+    "instructions": "Drag and drop your photos here or click to select",
+    "dragActive": "Drop photos here",
+    "maxFiles": "Maximum {{count}} files",
+    "acceptedFormats": "Accepted formats: JPEG, PNG, WebP",
+    "uploading": "Uploading...",
+    "uploadSuccess": "Upload successful!",
+    "uploadError": "Upload error",
+    "selectPhotos": "Select Photos",
+    "selectedCount": "{{count}} photo(s) selected"
+  },
+  "product": {
+    "form": {
+      "title": "Product Title",
+      "description": "Description",
+      "price": "Price",
+      "categories": "Categories",
+      "selectCategories": "Select categories",
+      "createProduct": "Create Product",
+      "updateProduct": "Update Product",
+      "publishProduct": "Publish Product",
+      "unpublishProduct": "Unpublish Product"
+    },
+    "status": {
+      "draft": "Draft",
+      "available": "Available",
+      "reserved": "Reserved",
+      "sold": "Sold"
+    },
+    "actions": {
+      "publish": "Publish",
+      "unpublish": "Unpublish",
+      "edit": "Edit",
+      "delete": "Delete"
+    }
+  },
+  "dashboard": {
+    "title": "Seller Dashboard",
+    "stats": {
+      "totalProducts": "Total Products",
+      "availableProducts": "Available Products",
+      "reservedProducts": "Reserved Products",
+      "soldProducts": "Sold Products"
+    },
+    "recentActivity": "Recent Activity",
+    "manageProducts": "Manage Products",
+    "viewOrders": "View Orders"
+  },
+  "orders": {
+    "title": "Order Management",
+    "wantLists": "Want Lists",
+    "buyer": "Buyer",
+    "items": "Items",
+    "total": "Total",
+    "actions": "Actions",
+    "cancelOrder": "Cancel Order",
+    "removeItem": "Remove Item",
+    "noOrders": "No orders found"
+  }
+}
