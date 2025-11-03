@@ -3,6 +3,7 @@ import authRoutes from './auth.routes'
 import mediaRoutes from './media.routes'
 import productRoutes from './product.routes'
 import wantListRoutes from './wantList.routes'
+import categoryRoutes from './category.routes'
 
 const router = Router()
 
@@ -17,6 +18,9 @@ router.use('/products', productRoutes)
 
 // Mount want list routes
 router.use('/want-lists', wantListRoutes)
+
+// Mount category routes
+router.use('/categories', categoryRoutes)
 
 // API info endpoint
 router.get('/', (_req, res) => {
@@ -56,6 +60,10 @@ router.get('/', (_req, res) => {
         getSellerWantLists: 'GET /api/want-lists/seller',
         cancelWantList: 'DELETE /api/want-lists/seller/:id',
         cleanupEmptyWantLists: 'POST /api/want-lists/seller/cleanup'
+      },
+      categories: {
+        getCategories: 'GET /api/categories',
+        getCategory: 'GET /api/categories/:id'
       }
     }
   })
