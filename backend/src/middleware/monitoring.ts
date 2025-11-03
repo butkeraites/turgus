@@ -70,7 +70,7 @@ export const requestTracker = (req: Request, res: Response, next: NextFunction) 
 };
 
 // Error tracking middleware
-export const errorTracker = (error: Error, req: Request, res: Response, next: NextFunction) => {
+export const errorTracker = (error: Error, req: Request, _res: Response, next: NextFunction) => {
   const route = `${req.method} ${req.route?.path || req.path}`;
   
   // Increment error count
@@ -94,7 +94,7 @@ export const errorTracker = (error: Error, req: Request, res: Response, next: Ne
 };
 
 // Health check endpoint with metrics
-export const healthCheck = (req: Request, res: Response) => {
+export const healthCheck = (_req: Request, res: Response) => {
   const uptime = process.uptime();
   const memoryUsage = process.memoryUsage();
   
@@ -129,7 +129,7 @@ export const healthCheck = (req: Request, res: Response) => {
 };
 
 // Metrics endpoint for monitoring systems
-export const metricsEndpoint = (req: Request, res: Response) => {
+export const metricsEndpoint = (_req: Request, res: Response) => {
   const prometheusMetrics = [];
   
   // Request count metrics
@@ -166,7 +166,6 @@ export const metricsEndpoint = (req: Request, res: Response) => {
 // Business metrics tracking
 export const trackBusinessMetric = (metric: string, value: number, labels?: Record<string, string>) => {
   const timestamp = new Date().toISOString();
-  const labelStr = labels ? Object.entries(labels).map(([k, v]) => `${k}="${v}"`).join(',') : '';
   
   console.log(JSON.stringify({
     timestamp,

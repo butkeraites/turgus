@@ -6,8 +6,17 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Create enum types
-CREATE TYPE product_status AS ENUM ('draft', 'available', 'reserved', 'sold');
-CREATE TYPE want_list_status AS ENUM ('active', 'completed', 'cancelled');
+DO $$ BEGIN
+    CREATE TYPE product_status AS ENUM ('draft', 'available', 'reserved', 'sold');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE want_list_status AS ENUM ('active', 'completed', 'cancelled');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 -- Seller accounts table (predefined seller account)
 CREATE TABLE seller_accounts (

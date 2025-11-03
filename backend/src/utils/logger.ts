@@ -37,7 +37,7 @@ const consoleFormat = format.combine(
   format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss:ms' }),
   format.colorize({ all: true }),
   format.printf(
-    (info) => `${info.timestamp} ${info.level}: ${info.message}`
+    (info: any) => `${info.timestamp} ${info.level}: ${info.message}`
   )
 );
 
