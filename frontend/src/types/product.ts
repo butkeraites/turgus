@@ -37,6 +37,7 @@ export interface ProductWithDetails extends Product {
   photos: ProductPhoto[];
   categories: Category[];
   isViewed?: boolean;
+  is_viewed?: boolean; // Backend returns this field name
 }
 
 export interface CreateProductData {

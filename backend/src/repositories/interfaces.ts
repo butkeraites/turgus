@@ -64,6 +64,7 @@ export interface IProductRepository {
   addCategories(productId: string, categoryIds: string[]): Promise<void>
   removeCategories(productId: string, categoryIds?: string[]): Promise<void>
   getCategories(productId: string): Promise<Category[]>
+  recordView(productId: string, buyerId: string): Promise<void>
 }
 
 // Product Photo Repository Interface

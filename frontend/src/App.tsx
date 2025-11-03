@@ -6,6 +6,7 @@ import { HomePage } from './components/home/HomePage';
 import { AuthPage } from './components/auth/AuthPage';
 import { SellerDashboard } from './components/dashboard/SellerDashboard';
 import { BuyerDashboard } from './components/dashboard/BuyerDashboard';
+import { ProductDetail } from './components/buyer/ProductDetail';
 import { ProtectedRoute, PublicRoute } from './components/auth/ProtectedRoute';
 
 function App() {
@@ -45,6 +46,14 @@ function App() {
               element={
                 <ProtectedRoute requiredUserType="buyer">
                   <BuyerDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/buyer/product/:productId" 
+              element={
+                <ProtectedRoute requiredUserType="buyer">
+                  <ProductDetail />
                 </ProtectedRoute>
               } 
             />

@@ -470,4 +470,14 @@ export class ProductRepository extends BaseRepository implements IProductReposit
     `
     return this.query<Category>(query, [productId])
   }
+
+  async recordView(productId: string, buyerId: string): Promise<void> {
+    const query = `
+      INSERT INTO product_views (product_id, buyer_id, viewed_at)
+      VALUES ($1, $2, CURRENT_TIMESTAMP)
+      ON CONFLICT (product_id, buyer_id) 
+      DO UPDATE SET viewed_at = CURRENT_TIMESTAMP
+    `
+    await this.query(query, [productId, buyerId])
+  }
 }

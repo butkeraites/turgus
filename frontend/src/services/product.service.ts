@@ -1,6 +1,5 @@
 import axios from 'axios';
 import { 
-  Product, 
   ProductWithDetails, 
   CreateProductData, 
   UpdateProductData, 
@@ -97,6 +96,12 @@ class ProductService {
   async getCategories(): Promise<Category[]> {
     const response = await axios.get(`${API_BASE_URL}/api/categories`);
     return response.data.data || response.data;
+  }
+
+  async recordView(productId: string): Promise<void> {
+    await axios.post(`${API_BASE_URL}/api/products/${productId}/view`, {}, {
+      headers: this.getAuthHeaders(),
+    });
   }
 }
 

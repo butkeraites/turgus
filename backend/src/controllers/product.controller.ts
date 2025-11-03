@@ -567,3 +567,61 @@ export const getSellerProducts = async (req: AuthenticatedRequest, res: Response
     })
   }
 }
+
+/**
+ * Record a product view (buyer only)
+ */
+export const recordProductView = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    if (!req.user || req.user.userType !== 'buyer') {
+      res.status(403).json({
+        error: 'Access denied',
+        message: 'Buyer access required'
+      })
+      return
+    }
+
+    const idValidation = UUIDSchema.safeParse(req.params.id)
+    if (!idValidation.success) {
+      res.status(400).json({
+        error: 'Validation error',
+        message: 'Invalid product ID format'
+      })
+      return
+    }
+
+    const productId = idValidation.data
+
+    // Check if product exists and is published
+    const product = await repositories.product.findById(productId)
+    if (!product) {
+      res.status(404).json({
+        error: 'Product not found',
+        message: 'The requested product does not exist'
+      })
+      return
+    }
+
+    if (product.status === 'draft') {
+      res.status(403).json({
+        error: 'Access denied',
+        message: 'Cannot view draft products'
+      })
+      return
+    }
+
+    // Record the view
+    await repositories.product.recordView(productId, req.user.userId)
+
+    res.json({
+      success: true,
+      message: 'Product view recorded successfully'
+    })
+  } catch (error) {
+    console.error('Record product view error:', error)
+    res.status(500).json({
+      error: 'Internal server error',
+      message: 'An error occurred while recording the product view'
+    })
+  }
+}

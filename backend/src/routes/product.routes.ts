@@ -7,7 +7,8 @@ import {
   publishProduct,
   unpublishProduct,
   getProducts,
-  getSellerProducts
+  getSellerProducts,
+  recordProductView
 } from '../controllers/product.controller'
 import { authenticateToken, requireSeller } from '../utils/auth'
 
@@ -16,6 +17,9 @@ const router = Router()
 // Public routes (no authentication required)
 router.get('/', getProducts) // Get products with filtering and pagination
 router.get('/:id', getProduct) // Get single product by ID
+
+// Buyer routes (authentication required)
+router.post('/:id/view', authenticateToken, recordProductView) // Record product view
 
 // Seller-only routes (authentication + seller role required)
 router.post('/', authenticateToken, requireSeller, createProduct) // Create product
