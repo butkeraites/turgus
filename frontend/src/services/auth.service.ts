@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { LoginCredentials, User } from '../types/auth';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 export interface AuthResponse {
   user: User;
@@ -32,12 +32,18 @@ class AuthService {
       password: credentials.password,
     });
     
-    const { user, token } = response.data;
+    const { user, token } = response.data.data;
+    // Map userType to type for frontend compatibility
+    const mappedUser = {
+      ...user,
+      type: user.userType
+    };
+    
     this.token = token;
     localStorage.setItem('auth_token', token);
     this.setAuthHeader(token);
     
-    return { user, token };
+    return { user: mappedUser, token };
   }
 
   async loginBuyer(credentials: LoginCredentials): Promise<AuthResponse> {
@@ -46,12 +52,18 @@ class AuthService {
       password: credentials.password,
     });
     
-    const { user, token } = response.data;
+    const { user, token } = response.data.data;
+    // Map userType to type for frontend compatibility
+    const mappedUser = {
+      ...user,
+      type: user.userType
+    };
+    
     this.token = token;
     localStorage.setItem('auth_token', token);
     this.setAuthHeader(token);
     
-    return { user, token };
+    return { user: mappedUser, token };
   }
 
   async registerBuyer(credentials: LoginCredentials): Promise<AuthResponse> {
@@ -62,17 +74,28 @@ class AuthService {
       password: credentials.password,
     });
     
-    const { user, token } = response.data;
+    const { user, token } = response.data.data;
+    // Map userType to type for frontend compatibility
+    const mappedUser = {
+      ...user,
+      type: user.userType
+    };
+    
     this.token = token;
     localStorage.setItem('auth_token', token);
     this.setAuthHeader(token);
     
-    return { user, token };
+    return { user: mappedUser, token };
   }
 
   async getCurrentUser(): Promise<User> {
     const response = await axios.get(`${API_BASE_URL}/auth/me`);
-    return response.data.user;
+    const user = response.data.user;
+    // Map userType to type for frontend compatibility
+    return {
+      ...user,
+      type: user.userType
+    };
   }
 
   async refreshToken(): Promise<string> {

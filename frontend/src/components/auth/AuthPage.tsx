@@ -3,22 +3,19 @@ import { SellerLogin } from './SellerLogin';
 import { BuyerLogin } from './BuyerLogin';
 import { BuyerRegistration } from './BuyerRegistration';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
 
 type AuthMode = 'select' | 'seller-login' | 'buyer-login' | 'buyer-register';
 
 export function AuthPage() {
   const [mode, setMode] = useState<AuthMode>('select');
   const navigate = useNavigate();
-  const { user } = useAuth();
 
-  const handleAuthSuccess = () => {
-    // Redirect based on user type
-    if (user?.type === 'seller') {
-      navigate('/seller');
-    } else {
-      navigate('/buyer');
-    }
+  const handleSellerAuthSuccess = () => {
+    navigate('/seller');
+  };
+
+  const handleBuyerAuthSuccess = () => {
+    navigate('/buyer');
   };
 
   const handleCancel = () => {
@@ -28,7 +25,7 @@ export function AuthPage() {
   if (mode === 'seller-login') {
     return (
       <SellerLogin 
-        onSuccess={handleAuthSuccess}
+        onSuccess={handleSellerAuthSuccess}
         onCancel={handleCancel}
       />
     );
@@ -37,7 +34,7 @@ export function AuthPage() {
   if (mode === 'buyer-login') {
     return (
       <BuyerLogin 
-        onSuccess={handleAuthSuccess}
+        onSuccess={handleBuyerAuthSuccess}
         onCancel={handleCancel}
         onSwitchToRegister={() => setMode('buyer-register')}
       />
@@ -47,7 +44,7 @@ export function AuthPage() {
   if (mode === 'buyer-register') {
     return (
       <BuyerRegistration 
-        onSuccess={handleAuthSuccess}
+        onSuccess={handleBuyerAuthSuccess}
         onCancel={handleCancel}
         onSwitchToLogin={() => setMode('buyer-login')}
       />
