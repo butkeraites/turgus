@@ -4,6 +4,7 @@ import { IRepositoryFactory } from './interfaces'
 import { CategoryRepository } from './category.repository'
 import { ProductPhotoRepository } from './productPhoto.repository'
 import { ProductRepository } from './product.repository'
+import { WantListRepository } from './wantList.repository'
 
 // Placeholder repositories (to be implemented in future tasks)
 class PlaceholderSellerAccountRepository {
@@ -32,20 +33,7 @@ class PlaceholderProductViewRepository {
   async getViewCount() { throw new Error('Not implemented') }
 }
 
-class PlaceholderWantListRepository {
-  async findOrCreateForBuyer() { throw new Error('Not implemented') }
-  async findByBuyer() { throw new Error('Not implemented') }
-  async findBySeller() { throw new Error('Not implemented') }
-  async addItem() { throw new Error('Not implemented') }
-  async removeItem() { throw new Error('Not implemented') }
-  async removeItemById() { throw new Error('Not implemented') }
-  async hasItem() { throw new Error('Not implemented') }
-  async getItemCount() { throw new Error('Not implemented') }
-  async getTotalPrice() { throw new Error('Not implemented') }
-  async cancel() { throw new Error('Not implemented') }
-  async complete() { throw new Error('Not implemented') }
-  async cleanupEmptyWantLists() { throw new Error('Not implemented') }
-}
+
 
 // Repository factory implementation
 class RepositoryFactory implements IRepositoryFactory {
@@ -55,7 +43,7 @@ class RepositoryFactory implements IRepositoryFactory {
   private _product: ProductRepository
   private _productPhoto: ProductPhotoRepository
   private _productView: any
-  private _wantList: any
+  private _wantList: WantListRepository
 
   constructor() {
     // Initialize repositories
@@ -65,7 +53,7 @@ class RepositoryFactory implements IRepositoryFactory {
     this._product = new ProductRepository()
     this._productPhoto = new ProductPhotoRepository()
     this._productView = new PlaceholderProductViewRepository()
-    this._wantList = new PlaceholderWantListRepository()
+    this._wantList = new WantListRepository()
   }
 
   get sellerAccount() {
@@ -101,6 +89,6 @@ class RepositoryFactory implements IRepositoryFactory {
 export const repositories = new RepositoryFactory()
 
 // Export individual repositories and interfaces
-export { CategoryRepository, ProductPhotoRepository, ProductRepository }
+export { CategoryRepository, ProductPhotoRepository, ProductRepository, WantListRepository }
 export * from './interfaces'
 export * from './base'

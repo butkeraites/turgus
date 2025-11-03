@@ -2,6 +2,7 @@ import { Router } from 'express'
 import authRoutes from './auth.routes'
 import mediaRoutes from './media.routes'
 import productRoutes from './product.routes'
+import wantListRoutes from './wantList.routes'
 
 const router = Router()
 
@@ -13,6 +14,9 @@ router.use('/media', mediaRoutes)
 
 // Mount product routes
 router.use('/products', productRoutes)
+
+// Mount want list routes
+router.use('/want-lists', wantListRoutes)
 
 // API info endpoint
 router.get('/', (_req, res) => {
@@ -44,6 +48,14 @@ router.get('/', (_req, res) => {
         publishProduct: 'POST /api/products/:id/publish',
         unpublishProduct: 'POST /api/products/:id/unpublish',
         getSellerProducts: 'GET /api/products/seller/products'
+      },
+      wantLists: {
+        getBuyerWantList: 'GET /api/want-lists',
+        addToWantList: 'POST /api/want-lists/items',
+        removeFromWantList: 'DELETE /api/want-lists/items/:id',
+        getSellerWantLists: 'GET /api/want-lists/seller',
+        cancelWantList: 'DELETE /api/want-lists/seller/:id',
+        cleanupEmptyWantLists: 'POST /api/want-lists/seller/cleanup'
       }
     }
   })

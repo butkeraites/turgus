@@ -82,20 +82,20 @@
     - Add status filtering (available/sold) and sorting options
     - _Requirements: 5.1, 5.5, 6.1, 6.3, 6.4_
 
-- [ ] 6. Implement want list functionality
-  - [ ] 6.1 Create want list management endpoints
+- [x] 6. Implement want list functionality
+  - [x] 6.1 Create want list management endpoints
     - Implement GET /api/want-lists for buyer's want list
     - Implement POST /api/want-lists/items to add products
     - Implement DELETE /api/want-lists/items/:id to remove products
     - _Requirements: 8.1, 9.1, 9.2_
   
-  - [ ] 6.2 Build seller want list management
+  - [x] 6.2 Build seller want list management
     - Implement GET /api/seller/want-lists for seller view
     - Implement DELETE /api/seller/want-lists/:id for cancellation
     - Add automatic empty want list cleanup
     - _Requirements: 10.1, 10.3, 10.5_
   
-  - [ ] 6.3 Add product reservation logic
+  - [x] 6.3 Add product reservation logic
     - Implement product status updates when added to want list
     - Prevent multiple reservations of same product
     - Add notification system for seller alerts
