@@ -142,7 +142,7 @@ export abstract class BaseRepository {
   }
 
   // Helper method to get record by ID
-  protected async findById<T>(table: string, id: string): Promise<T | null> {
+  protected async findRecordById<T>(table: string, id: string): Promise<T | null> {
     const query = `SELECT * FROM ${table} WHERE id = $1`
     return this.queryOne<T>(query, [id])
   }

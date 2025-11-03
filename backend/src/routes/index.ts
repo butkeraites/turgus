@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import authRoutes from './auth.routes'
 import mediaRoutes from './media.routes'
+import productRoutes from './product.routes'
 
 const router = Router()
 
@@ -9,6 +10,9 @@ router.use('/auth', authRoutes)
 
 // Mount media routes
 router.use('/media', mediaRoutes)
+
+// Mount product routes
+router.use('/products', productRoutes)
 
 // API info endpoint
 router.get('/', (_req, res) => {
@@ -30,6 +34,16 @@ router.get('/', (_req, res) => {
         deletePhoto: 'DELETE /api/media/:id',
         getUnassigned: 'GET /api/media/unassigned',
         cleanup: 'POST /api/media/cleanup'
+      },
+      products: {
+        getProducts: 'GET /api/products',
+        getProduct: 'GET /api/products/:id',
+        createProduct: 'POST /api/products',
+        updateProduct: 'PUT /api/products/:id',
+        deleteProduct: 'DELETE /api/products/:id',
+        publishProduct: 'POST /api/products/:id/publish',
+        unpublishProduct: 'POST /api/products/:id/unpublish',
+        getSellerProducts: 'GET /api/products/seller/products'
       }
     }
   })
