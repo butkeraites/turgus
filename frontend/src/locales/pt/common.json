@@ -12,7 +12,10 @@
     "close": "Fechar",
     "login": "Entrar",
     "logout": "Sair",
-    "register": "Registrar"
+    "register": "Registrar",
+    "update": "Atualizar",
+    "retry": "Tentar Novamente",
+    "submitting": "Enviando..."
   },
   "navigation": {
     "home": "Início",
@@ -36,5 +39,23 @@
     "invalid": "Valor inválido",
     "tooShort": "Muito curto",
     "tooLong": "Muito longo"
+  },
+  "user": {
+    "buyer": "Comprador",
+    "seller": "Vendedor"
+  },
+  "comments": {
+    "title": "Comentários",
+    "placeholder": "Escreva um comentário...",
+    "replyPlaceholder": "Escreva uma resposta...",
+    "submit": "Publicar Comentário",
+    "reply": "Responder",
+    "moderate": "Moderar",
+    "unmoderate": "Desmoderar",
+    "moderated": "Moderado",
+    "confirmDelete": "Tem certeza de que deseja excluir este comentário?",
+    "noComments": "Ainda não há comentários. Seja o primeiro a comentar!",
+    "loginRequired": "Faça login para deixar um comentário.",
+    "loadError": "Falha ao carregar comentários. Tente novamente."
   }
 }

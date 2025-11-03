@@ -4,6 +4,7 @@ import mediaRoutes from './media.routes'
 import productRoutes from './product.routes'
 import wantListRoutes from './wantList.routes'
 import categoryRoutes from './category.routes'
+import commentRoutes from './comment.routes'
 
 const router = Router()
 
@@ -21,6 +22,9 @@ router.use('/want-lists', wantListRoutes)
 
 // Mount category routes
 router.use('/categories', categoryRoutes)
+
+// Mount comment routes
+router.use('/', commentRoutes)
 
 // API info endpoint
 router.get('/', (_req, res) => {
@@ -64,6 +68,13 @@ router.get('/', (_req, res) => {
       categories: {
         getCategories: 'GET /api/categories',
         getCategory: 'GET /api/categories/:id'
+      },
+      comments: {
+        createComment: 'POST /api/products/:productId/comments',
+        getProductComments: 'GET /api/products/:productId/comments',
+        updateComment: 'PUT /api/comments/:commentId',
+        deleteComment: 'DELETE /api/comments/:commentId',
+        moderateComment: 'PATCH /api/comments/:commentId/moderate'
       }
     }
   })

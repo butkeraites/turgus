@@ -215,14 +215,14 @@
     - Optimize touch targets and haptic feedback
     - _Requirements: 12.3_
 
-- [ ] 13. Add comment system for products
-  - [ ] 13.1 Create comment data models and API
+- [x] 13. Add comment system for products
+  - [x] 13.1 Create comment data models and API
     - Design comment database schema
     - Implement comment CRUD endpoints
     - Add comment threading and moderation
     - _Requirements: 7.3_
   
-  - [ ] 13.2 Build comment interface components
+  - [x] 13.2 Build comment interface components
     - Create comment display and input components
     - Implement real-time comment updates
     - Add comment moderation for sellers

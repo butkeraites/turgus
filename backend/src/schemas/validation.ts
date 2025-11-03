@@ -132,6 +132,34 @@ export const AddToWantListSchema = z.object({
   product_id: UUIDSchema
 })
 
+// Product Comment schemas
+export const AuthorTypeSchema = z.enum(['buyer', 'seller'])
+
+export const ProductCommentSchema = z.object({
+  id: UUIDSchema,
+  product_id: UUIDSchema,
+  author_id: UUIDSchema,
+  author_type: AuthorTypeSchema,
+  parent_comment_id: UUIDSchema.optional(),
+  content: z.string().min(1),
+  is_moderated: z.boolean(),
+  created_at: z.date(),
+  updated_at: z.date()
+})
+
+export const CreateCommentSchema = z.object({
+  content: z.string().min(1, 'Comment content is required').max(1000, 'Comment too long'),
+  parent_comment_id: UUIDSchema.optional()
+})
+
+export const UpdateCommentSchema = z.object({
+  content: z.string().min(1, 'Comment content is required').max(1000, 'Comment too long')
+})
+
+export const ModerateCommentSchema = z.object({
+  is_moderated: z.boolean()
+})
+
 // Query parameter schemas
 export const PaginationSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
@@ -183,6 +211,9 @@ export type CreateProduct = z.infer<typeof CreateProductSchema>
 export type UpdateProduct = z.infer<typeof UpdateProductSchema>
 export type ProductFilters = z.infer<typeof ProductFiltersSchema>
 export type AddToWantList = z.infer<typeof AddToWantListSchema>
+export type CreateComment = z.infer<typeof CreateCommentSchema>
+export type UpdateComment = z.infer<typeof UpdateCommentSchema>
+export type ModerateComment = z.infer<typeof ModerateCommentSchema>
 export type JWTPayload = z.infer<typeof JWTPayloadSchema>
 export type ApiError = z.infer<typeof ApiErrorSchema>
 export type ApiSuccess = z.infer<typeof ApiSuccessSchema>

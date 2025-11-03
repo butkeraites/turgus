@@ -4,6 +4,7 @@
 export type ProductStatus = 'draft' | 'available' | 'reserved' | 'sold'
 export type WantListStatus = 'active' | 'completed' | 'cancelled'
 export type Language = 'pt' | 'en'
+export type AuthorType = 'buyer' | 'seller'
 
 // Seller Account interface
 export interface SellerAccount {
@@ -94,6 +95,19 @@ export interface WantListItem {
   added_at: Date
 }
 
+// Product Comment interface
+export interface ProductComment {
+  id: string
+  product_id: string
+  author_id: string
+  author_type: AuthorType
+  parent_comment_id?: string
+  content: string
+  is_moderated: boolean
+  created_at: Date
+  updated_at: Date
+}
+
 // Extended interfaces with relations (for API responses)
 export interface ProductWithPhotos extends Product {
   photos: ProductPhoto[]
@@ -115,6 +129,15 @@ export interface WantListWithItems extends WantList {
 
 export interface WantListWithBuyer extends WantListWithItems {
   buyer: Pick<BuyerAccount, 'id' | 'name' | 'telephone' | 'address'>
+}
+
+export interface ProductCommentWithAuthor extends ProductComment {
+  author_name: string
+  replies?: ProductCommentWithAuthor[]
+}
+
+export interface ProductWithComments extends ProductWithDetails {
+  comments: ProductCommentWithAuthor[]
 }
 
 // Database query result types

@@ -5,6 +5,7 @@ import { productService } from '../../services/product.service';
 import { wantListService } from '../../services/wantList.service';
 import { PhotoGallery } from './PhotoGallery';
 import { LoadingSpinner } from '../shared/LoadingSpinner';
+import { CommentSection } from '../shared/CommentSection';
 import { ArrowLeftIcon, HeartIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 
@@ -260,12 +261,12 @@ export function ProductDetail() {
               </div>
             </div>
 
-            {/* Comments Section Placeholder */}
+            {/* Comments Section */}
             <div className="border-t pt-6 mt-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Comments</h3>
-              <div className="bg-gray-50 rounded-lg p-4 text-center text-gray-500">
-                Comments feature coming soon...
-              </div>
+              <CommentSection 
+                productId={product.id} 
+                sellerId={product.sellerId}
+              />
             </div>
           </div>
         </div>

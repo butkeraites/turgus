@@ -114,6 +114,19 @@ CREATE TABLE want_list_items (
     UNIQUE(want_list_id, product_id)
 );
 
+-- Product comments table (buyer questions and seller responses)
+CREATE TABLE product_comments (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    product_id UUID NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    author_id UUID NOT NULL, -- Can be buyer_id or seller_id
+    author_type VARCHAR(10) NOT NULL CHECK (author_type IN ('buyer', 'seller')),
+    parent_comment_id UUID REFERENCES product_comments(id) ON DELETE CASCADE,
+    content TEXT NOT NULL,
+    is_moderated BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Create indexes for performance optimization
 
 -- Seller accounts indexes
@@ -156,6 +169,14 @@ CREATE INDEX idx_want_list_items_want_list_id ON want_list_items(want_list_id);
 CREATE INDEX idx_want_list_items_product_id ON want_list_items(product_id);
 CREATE INDEX idx_want_list_items_added_at ON want_list_items(added_at DESC);
 
+-- Product comments indexes
+CREATE INDEX idx_product_comments_product_id ON product_comments(product_id);
+CREATE INDEX idx_product_comments_author_id ON product_comments(author_id);
+CREATE INDEX idx_product_comments_author_type ON product_comments(author_type);
+CREATE INDEX idx_product_comments_parent_comment_id ON product_comments(parent_comment_id);
+CREATE INDEX idx_product_comments_created_at ON product_comments(created_at DESC);
+CREATE INDEX idx_product_comments_is_moderated ON product_comments(is_moderated);
+
 -- Create updated_at trigger function
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -180,6 +201,10 @@ CREATE TRIGGER update_products_updated_at
 
 CREATE TRIGGER update_want_lists_updated_at 
     BEFORE UPDATE ON want_lists
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_product_comments_updated_at 
+    BEFORE UPDATE ON product_comments
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- Insert predefined seller account (Requirement 13.1, 13.2)

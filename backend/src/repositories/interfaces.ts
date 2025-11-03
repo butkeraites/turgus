@@ -9,8 +9,10 @@ import {
   ProductView,
   WantList,
   WantListItem,
+  ProductComment,
   ProductWithPhotos,
   ProductWithDetails,
+  ProductCommentWithAuthor,
   WantListWithItems,
   WantListWithBuyer,
   PaginatedResult,
@@ -21,7 +23,9 @@ import {
   CreateProduct,
   UpdateProduct,
   ProductFilters,
-  BuyerRegistration
+  BuyerRegistration,
+  CreateComment,
+  UpdateComment
 } from '../schemas/validation'
 
 // Seller Account Repository Interface
@@ -105,6 +109,18 @@ export interface IWantListRepository {
   cleanupEmptyWantLists(): Promise<number>
 }
 
+// Product Comment Repository Interface
+export interface IProductCommentRepository {
+  create(productId: string, authorId: string, authorType: 'buyer' | 'seller', data: CreateComment): Promise<ProductComment>
+  findById(id: string): Promise<ProductComment | null>
+  findByProduct(productId: string): Promise<ProductCommentWithAuthor[]>
+  update(id: string, data: UpdateComment): Promise<ProductComment | null>
+  delete(id: string): Promise<boolean>
+  moderate(id: string, isModerated: boolean): Promise<ProductComment | null>
+  findByAuthor(authorId: string, authorType: 'buyer' | 'seller', pagination: PaginationParams): Promise<PaginatedResult<ProductCommentWithAuthor>>
+  getCommentCount(productId: string): Promise<number>
+}
+
 // Repository factory interface
 export interface IRepositoryFactory {
   sellerAccount: ISellerAccountRepository
@@ -114,4 +130,5 @@ export interface IRepositoryFactory {
   productPhoto: IProductPhotoRepository
   productView: IProductViewRepository
   wantList: IWantListRepository
+  productComment: IProductCommentRepository
 }

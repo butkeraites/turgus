@@ -5,6 +5,7 @@ import { CategoryRepository } from './category.repository'
 import { ProductPhotoRepository } from './productPhoto.repository'
 import { ProductRepository } from './product.repository'
 import { WantListRepository } from './wantList.repository'
+import { ProductCommentRepository } from './productComment.repository'
 
 // Placeholder repositories (to be implemented in future tasks)
 class PlaceholderSellerAccountRepository {
@@ -44,6 +45,7 @@ class RepositoryFactory implements IRepositoryFactory {
   private _productPhoto: ProductPhotoRepository
   private _productView: any
   private _wantList: WantListRepository
+  private _productComment: ProductCommentRepository
 
   constructor() {
     // Initialize repositories
@@ -54,6 +56,7 @@ class RepositoryFactory implements IRepositoryFactory {
     this._productPhoto = new ProductPhotoRepository()
     this._productView = new PlaceholderProductViewRepository()
     this._wantList = new WantListRepository()
+    this._productComment = new ProductCommentRepository()
   }
 
   get sellerAccount() {
@@ -83,12 +86,16 @@ class RepositoryFactory implements IRepositoryFactory {
   get wantList() {
     return this._wantList
   }
+
+  get productComment() {
+    return this._productComment
+  }
 }
 
 // Export singleton instance
 export const repositories = new RepositoryFactory()
 
 // Export individual repositories and interfaces
-export { CategoryRepository, ProductPhotoRepository, ProductRepository, WantListRepository }
+export { CategoryRepository, ProductPhotoRepository, ProductRepository, WantListRepository, ProductCommentRepository }
 export * from './interfaces'
 export * from './base'
