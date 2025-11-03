@@ -19,7 +19,10 @@
     "products": "Products",
     "profile": "Profile",
     "dashboard": "Dashboard",
-    "wantList": "Want List"
+    "wantList": "Want List",
+    "wishlist": "Wishlist",
+    "add": "Add",
+    "orders": "Orders"
   },
   "status": {
     "loading": "Loading...",

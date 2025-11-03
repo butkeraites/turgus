@@ -2,14 +2,114 @@
 <html lang="pt">
   <head>
     <meta charset="UTF-8" />
+    
+    <!-- PWA and Mobile Optimization -->
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Turgus - Mobile-first bilingual marketplace" />
-    <meta name="theme-color" content="#000000" />
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- Mobile viewport and optimization -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Turgus" />
+    
+    <!-- Theme colors -->
+    <meta name="theme-color" content="#4f46e5" />
+    <meta name="msapplication-TileColor" content="#4f46e5" />
+    
+    <!-- SEO and Description -->
+    <meta name="description" content="Turgus - Mobile-first bilingual marketplace platform for buying and selling products" />
+    <meta name="keywords" content="marketplace, mobile, bilingual, shopping, products, turgus" />
+    <meta name="author" content="Turgus Marketplace" />
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="Turgus Marketplace" />
+    <meta property="og:description" content="Mobile-first bilingual marketplace platform" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/icon-512x512.png" />
+    
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/icon-192x192.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/icon-152x152.png" />
+    <link rel="apple-touch-icon" sizes="144x144" href="/icon-144x144.png" />
+    <link rel="apple-touch-icon" sizes="120x120" href="/icon-128x128.png" />
+    
+    <!-- Preconnect to external domains -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    
+    <!-- DNS prefetch for performance -->
+    <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+    
     <title>Turgus Marketplace</title>
+    
+    <!-- Critical CSS inlined for performance -->
+    <style>
+      /* Critical loading styles */
+      #root {
+        min-height: 100vh;
+        min-height: calc(var(--vh, 1vh) * 100);
+      }
+      
+      .loading-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: #f9fafb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+      }
+      
+      .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #e5e7eb;
+        border-top: 4px solid #4f46e5;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
   </head>
   <body>
+    <!-- Loading screen -->
+    <div id="loading-screen" class="loading-screen">
+      <div class="loading-spinner"></div>
+    </div>
+    
     <div id="root"></div>
+    
+    <!-- Remove loading screen when app loads -->
+    <script>
+      window.addEventListener('load', function() {
+        const loadingScreen = document.getElementById('loading-screen');
+        if (loadingScreen) {
+          loadingScreen.style.opacity = '0';
+          setTimeout(() => {
+            loadingScreen.remove();
+          }, 300);
+        }
+      });
+      
+      // Set viewport height for mobile
+      function setVH() {
+        const vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', vh + 'px');
+      }
+      setVH();
+      window.addEventListener('resize', setVH);
+      window.addEventListener('orientationchange', setVH);
+    </script>
+    
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

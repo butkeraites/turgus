@@ -1,6 +1,7 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { ProductPhoto } from '../../types/product';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { useSwipeGesture } from '../../hooks/useSwipeGesture';
 
 interface PhotoGalleryProps {
   photos: ProductPhoto[];
@@ -8,9 +9,6 @@ interface PhotoGalleryProps {
 
 export function PhotoGallery({ photos }: PhotoGalleryProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [touchEnd, setTouchEnd] = useState<number | null>(null);
-  const galleryRef = useRef<HTMLDivElement>(null);
 
   // Sort photos by order
   const sortedPhotos = [...photos].sort((a, b) => a.sortOrder - b.sortOrder);
@@ -27,30 +25,17 @@ export function PhotoGallery({ photos }: PhotoGalleryProps) {
     setCurrentIndex(index);
   };
 
-  // Touch handlers for swipe gestures
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-  };
-
-  const handleTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
-    
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > 50;
-    const isRightSwipe = distance < -50;
-
-    if (isLeftSwipe && sortedPhotos.length > 1) {
-      goToNext();
-    }
-    if (isRightSwipe && sortedPhotos.length > 1) {
-      goToPrevious();
-    }
-  };
+  // Swipe gesture handling
+  const swipeRef = useSwipeGesture<HTMLDivElement>({
+    onSwipeLeft: () => {
+      if (sortedPhotos.length > 1) goToNext();
+    },
+    onSwipeRight: () => {
+      if (sortedPhotos.length > 1) goToPrevious();
+    },
+    threshold: 50,
+    preventScroll: true
+  });
 
   // Keyboard navigation
   useEffect(() => {
@@ -78,11 +63,8 @@ export function PhotoGallery({ photos }: PhotoGalleryProps) {
 
   return (
     <div 
-      ref={galleryRef}
-      className="relative w-full h-full bg-black group"
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
+      ref={swipeRef}
+      className="relative w-full h-full bg-black group touch-manipulation"
     >
       {/* Main Image */}
       <div className="w-full h-full flex items-center justify-center">

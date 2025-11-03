@@ -19,7 +19,10 @@
     "products": "Produtos",
     "profile": "Perfil",
     "dashboard": "Painel",
-    "wantList": "Lista de Desejos"
+    "wantList": "Lista de Desejos",
+    "wishlist": "Desejos",
+    "add": "Adicionar",
+    "orders": "Pedidos"
   },
   "status": {
     "loading": "Carregando...",

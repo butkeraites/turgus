@@ -1,6 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { ProductWithDetails } from '../../types/product';
 import { EyeIcon } from '@heroicons/react/24/outline';
+import { LazyImage } from '../shared/LazyImage';
+import { useHapticFeedback } from '../../utils/haptics';
 
 interface ProductCardProps {
   product: ProductWithDetails;
@@ -9,11 +11,13 @@ interface ProductCardProps {
 
 export function ProductCard({ product, onClick }: ProductCardProps) {
   const navigate = useNavigate();
+  const { buttonPress } = useHapticFeedback();
   const primaryPhoto = product.photos?.[0];
   const isAvailable = product.status === 'available';
   const isViewed = product.isViewed || product.is_viewed;
 
   const handleClick = () => {
+    buttonPress(); // Haptic feedback on tap
     if (onClick) {
       onClick(product);
     } else {
@@ -30,21 +34,20 @@ export function ProductCard({ product, onClick }: ProductCardProps) {
 
   return (
     <div
-      className="relative aspect-square cursor-pointer group"
+      className="relative aspect-square cursor-pointer group touch-manipulation"
       onClick={handleClick}
     >
       {/* Product Image */}
       <div className="w-full h-full rounded-lg overflow-hidden bg-gray-200">
         {primaryPhoto ? (
-          <img
+          <LazyImage
             src={`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/media/${primaryPhoto.id}`}
             alt={product.title}
-            className={`w-full h-full object-cover transition-all duration-300 ${
+            className={`transition-all duration-300 ${
               isAvailable 
-                ? 'group-hover:scale-105' 
+                ? 'group-hover:scale-105 group-active:scale-95' 
                 : 'grayscale opacity-75'
             }`}
-            loading="lazy"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gray-300">
@@ -55,7 +58,7 @@ export function ProductCard({ product, onClick }: ProductCardProps) {
         {/* Status overlay for sold/reserved items */}
         {!isAvailable && (
           <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-            <span className="text-white font-semibold text-sm px-2 py-1 bg-black bg-opacity-60 rounded">
+            <span className="text-white font-semibold text-xs sm:text-sm px-2 py-1 bg-black bg-opacity-60 rounded">
               {product.status === 'sold' ? 'SOLD' : 'RESERVED'}
             </span>
           </div>
@@ -63,16 +66,16 @@ export function ProductCard({ product, onClick }: ProductCardProps) {
 
         {/* Viewed indicator */}
         {isViewed && (
-          <div className="absolute top-2 right-2">
+          <div className="absolute top-1 sm:top-2 right-1 sm:right-2">
             <div className="bg-black bg-opacity-60 rounded-full p-1">
-              <EyeIcon className="w-4 h-4 text-white" />
+              <EyeIcon className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
             </div>
           </div>
         )}
 
         {/* Price overlay */}
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-2">
-          <p className="text-white font-semibold text-sm">
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-1.5 sm:p-2">
+          <p className="text-white font-semibold text-xs sm:text-sm">
             {formatPrice(product.price)}
           </p>
           {product.title && (
@@ -82,11 +85,11 @@ export function ProductCard({ product, onClick }: ProductCardProps) {
           )}
         </div>
 
-        {/* Hover overlay with additional info */}
-        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 opacity-0 group-hover:opacity-100">
-          <div className="absolute top-2 left-2">
+        {/* Hover/Touch overlay with additional info */}
+        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 group-active:bg-opacity-30 transition-all duration-200 opacity-0 group-hover:opacity-100 group-active:opacity-100">
+          <div className="absolute top-1 sm:top-2 left-1 sm:left-2">
             {product.photos && product.photos.length > 1 && (
-              <div className="bg-black bg-opacity-60 rounded px-2 py-1">
+              <div className="bg-black bg-opacity-60 rounded px-1.5 sm:px-2 py-1">
                 <span className="text-white text-xs">
                   +{product.photos.length - 1} more
                 </span>

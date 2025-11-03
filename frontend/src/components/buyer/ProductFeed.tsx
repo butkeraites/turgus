@@ -4,6 +4,9 @@ import { ProductWithDetails, ProductFilters } from '../../types/product';
 import { productService } from '../../services/product.service';
 import { ProductCard } from './ProductCard';
 import { LoadingSpinner } from '../shared/LoadingSpinner';
+import { ResponsiveGrid } from '../layout/ResponsiveGrid';
+import { usePullToRefresh } from '../../hooks/usePullToRefresh';
+import { ArrowPathIcon } from '@heroicons/react/24/outline';
 
 interface ProductFeedProps {
   filters: ProductFilters;
@@ -51,7 +54,19 @@ export function ProductFeed({ filters }: ProductFeedProps) {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [filters]);
+  }, [filters, t]);
+
+  // Pull to refresh handler
+  const handleRefresh = useCallback(async () => {
+    await loadProducts(1, true);
+  }, [loadProducts]);
+
+  // Pull to refresh hook
+  const [pullToRefreshRef, pullToRefreshState] = usePullToRefresh<HTMLDivElement>({
+    onRefresh: handleRefresh,
+    threshold: 80,
+    enabled: !loading && !loadingMore
+  });
 
   // Load initial products
   useEffect(() => {
@@ -121,13 +136,49 @@ export function ProductFeed({ filters }: ProductFeedProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div 
+      ref={pullToRefreshRef}
+      className="space-y-6 relative"
+      style={{
+        transform: pullToRefreshState.isPulling 
+          ? `translateY(${pullToRefreshState.pullDistance}px)` 
+          : 'translateY(0)',
+        transition: pullToRefreshState.isPulling ? 'none' : 'transform 0.3s ease-out'
+      }}
+    >
+      {/* Pull to refresh indicator */}
+      {(pullToRefreshState.isPulling || pullToRefreshState.isRefreshing) && (
+        <div 
+          className="absolute -top-16 left-1/2 transform -translate-x-1/2 flex flex-col items-center justify-center text-gray-500"
+          style={{
+            opacity: pullToRefreshState.pullDistance / 80
+          }}
+        >
+          <ArrowPathIcon 
+            className={`w-6 h-6 mb-1 ${
+              pullToRefreshState.isRefreshing ? 'animate-spin' : ''
+            }`} 
+          />
+          <span className="text-xs">
+            {pullToRefreshState.isRefreshing 
+              ? 'Refreshing...' 
+              : pullToRefreshState.pullDistance >= 80 
+                ? 'Release to refresh' 
+                : 'Pull to refresh'
+            }
+          </span>
+        </div>
+      )}
+
       {/* Instagram-like grid layout */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-4">
+      <ResponsiveGrid 
+        cols={{ xs: 2, sm: 3, md: 4, lg: 5, xl: 6 }}
+        gap="sm"
+      >
         {products.map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}
-      </div>
+      </ResponsiveGrid>
 
       {/* Loading more indicator */}
       {loadingMore && (
