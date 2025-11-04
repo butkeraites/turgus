@@ -47,18 +47,51 @@ export class MediaService {
           }
         )
 
-        // Save the original optimized image (we'll save the first processed image as the main one)
+        // Save the main image first to get a proper file ID
         const mainImage = processedImages.find(img => img.filename.includes('_original.jpg'))
         if (!mainImage) {
           throw new Error('Failed to process main image')
         }
 
-        // Save the main image to storage
+        // Save the main image using the storage service to get a proper filename
         const storedFile = await this.storage.saveFile(
           mainImage.buffer,
           file.originalname,
           file.mimetype
         )
+
+        // Generate base filename for variants (without extension)
+        const baseFilename = storedFile.filename.replace(/\.[^/.]+$/, '')
+        
+        // Save all other processed variants with consistent naming
+        for (const processedImage of processedImages) {
+          if (processedImage !== mainImage) {
+            try {
+              // Create variant filename based on the stored file's name
+              let variantFilename: string
+              if (processedImage.filename.includes('_thumb')) {
+                variantFilename = `${baseFilename}_thumb.${processedImage.format === 'webp' ? 'webp' : 'jpg'}`
+              } else if (processedImage.filename.includes('_small')) {
+                variantFilename = `${baseFilename}_small.${processedImage.format === 'webp' ? 'webp' : 'jpg'}`
+              } else if (processedImage.filename.includes('_medium')) {
+                variantFilename = `${baseFilename}_medium.${processedImage.format === 'webp' ? 'webp' : 'jpg'}`
+              } else if (processedImage.filename.includes('_large')) {
+                variantFilename = `${baseFilename}_large.${processedImage.format === 'webp' ? 'webp' : 'jpg'}`
+              } else if (processedImage.filename.includes('_original') && processedImage.format === 'webp') {
+                variantFilename = `${baseFilename}_original.webp`
+              } else {
+                continue // Skip unknown variants
+              }
+
+              const filePath = await this.storage.getFilePath(variantFilename)
+              const fs = await import('fs/promises')
+              await fs.writeFile(filePath, processedImage.buffer)
+            } catch (error) {
+              console.error('Error saving variant:', processedImage.filename, error)
+              // Don't fail the whole upload for variant errors
+            }
+          }
+        }
 
         // Save to database (unassigned to any product initially)
         const photoRecord = await repositories.productPhoto.create({
@@ -70,17 +103,6 @@ export class MediaService {
           sort_order: 0
         })
 
-        // Save all processed variants
-        for (const processedImage of processedImages) {
-          if (processedImage !== mainImage) {
-            await this.storage.saveFile(
-              processedImage.buffer,
-              processedImage.filename,
-              processedImage.format === 'webp' ? 'image/webp' : 'image/jpeg'
-            )
-          }
-        }
-
         result.files.push({
           id: photoRecord.id,
           filename: storedFile.filename,
@@ -91,6 +113,7 @@ export class MediaService {
         })
 
       } catch (error) {
+        console.error('Upload error for file:', file.originalname, error)
         result.success = false
         result.errors.push(`Failed to upload ${file.originalname}: ${error instanceof Error ? error.message : 'Unknown error'}`)
       }

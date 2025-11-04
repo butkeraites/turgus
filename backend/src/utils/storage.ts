@@ -63,6 +63,7 @@ export class LocalStorage {
   }
 
   async getFilePath(filename: string): Promise<string> {
+    await this.ensureUploadDir()
     return path.join(this.config.uploadDir, filename)
   }
 
@@ -71,8 +72,19 @@ export class LocalStorage {
       throw new Error(`File size exceeds maximum allowed size of ${this.config.maxFileSize} bytes`)
     }
 
-    if (!this.config.allowedMimeTypes.includes(file.mimetype)) {
-      throw new Error(`File type ${file.mimetype} is not allowed. Allowed types: ${this.config.allowedMimeTypes.join(', ')}`)
+    // Check MIME type first
+    const isValidMimeType = this.config.allowedMimeTypes.includes(file.mimetype)
+    
+    // If MIME type is not valid, check file extension as fallback
+    let isValidExtension = false
+    if (!isValidMimeType) {
+      const extension = path.extname(file.originalname).toLowerCase()
+      const validExtensions = ['.jpg', '.jpeg', '.png', '.webp']
+      isValidExtension = validExtensions.includes(extension)
+    }
+
+    if (!isValidMimeType && !isValidExtension) {
+      throw new Error(`File type ${file.mimetype} is not allowed. Allowed types: ${this.config.allowedMimeTypes.join(', ')} or valid image extensions (.jpg, .jpeg, .png, .webp)`)
     }
   }
 }

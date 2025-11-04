@@ -5,9 +5,16 @@ export class MediaController {
   // POST /api/media/upload - Upload multiple photos
   async uploadPhotos(req: Request, res: Response): Promise<void> {
     try {
+      console.log('Upload request received:', {
+        files: req.files,
+        body: req.body,
+        headers: req.headers['content-type']
+      })
+      
       const files = req.files as Express.Multer.File[]
       
       if (!files || files.length === 0) {
+        console.log('No files received in request')
         res.status(400).json({
           error: 'No files provided',
           message: 'Please select at least one image file to upload'

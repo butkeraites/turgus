@@ -31,10 +31,17 @@ export const upload = multer({
 export const uploadSingle = upload.single('image')
 
 // Middleware for multiple file upload
-export const uploadMultiple = upload.array('images', 20)
+export const uploadMultiple = upload.array('photos', 20)
 
 // Error handling middleware for multer errors
-export const handleUploadError = (error: any, _req: Request, res: any, next: any) => {
+export const handleUploadError = (error: any, req: Request, res: any, next: any) => {
+  console.log('Upload error occurred:', {
+    error: error.message,
+    code: error.code,
+    files: req.files,
+    body: req.body
+  })
+  
   if (error instanceof multer.MulterError) {
     switch (error.code) {
       case 'LIMIT_FILE_SIZE':

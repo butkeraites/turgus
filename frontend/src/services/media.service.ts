@@ -1,53 +1,66 @@
 import axios from 'axios';
 import { UploadResponse, UploadedPhoto } from '../types/media';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 class MediaService {
-  private getAuthHeaders() {
-    const token = localStorage.getItem('token');
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  }
-
   async uploadPhotos(files: File[], onProgress?: (progress: number) => void): Promise<UploadResponse> {
-    const formData = new FormData();
-    
-    files.forEach((file) => {
-      formData.append('photos', file);
-    });
+    try {
+      const formData = new FormData();
+      
+      files.forEach((file) => {
+        formData.append('photos', file);
+      });
 
-    const response = await axios.post(`${API_BASE_URL}/api/media/upload`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-        ...this.getAuthHeaders(),
-      },
-      onUploadProgress: (progressEvent) => {
-        if (onProgress && progressEvent.total) {
-          const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-          onProgress(progress);
-        }
-      },
-    });
+      const response = await axios.post(`${API_BASE_URL}/media/upload`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        onUploadProgress: (progressEvent) => {
+          if (onProgress && progressEvent.total) {
+            const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            onProgress(progress);
+          }
+        },
+      });
 
-    return response.data;
+      return {
+        message: response.data.message,
+        files: response.data.files || [],
+        errors: response.data.errors || [],
+        count: response.data.count || 0
+      };
+    } catch (error: any) {
+      console.error('Upload error details:', error);
+      
+      if (error.response) {
+        // Server responded with error status
+        console.error('Server error response:', error.response.data);
+        throw new Error(error.response.data.message || 'Upload failed');
+      } else if (error.request) {
+        // Request was made but no response received
+        console.error('Network error:', error.request);
+        throw new Error('Network error - please check your connection');
+      } else {
+        // Something else happened
+        console.error('Upload error:', error.message);
+        throw new Error(error.message || 'Upload failed');
+      }
+    }
   }
 
   async getUnassignedPhotos(): Promise<UploadedPhoto[]> {
-    const response = await axios.get(`${API_BASE_URL}/api/media/unassigned`, {
-      headers: this.getAuthHeaders(),
-    });
+    const response = await axios.get(`${API_BASE_URL}/media/unassigned`);
 
-    return response.data.photos;
+    return response.data.photos || [];
   }
 
   async deletePhoto(photoId: string): Promise<void> {
-    await axios.delete(`${API_BASE_URL}/api/media/${photoId}`, {
-      headers: this.getAuthHeaders(),
-    });
+    await axios.delete(`${API_BASE_URL}/media/${photoId}`);
   }
 
   getPhotoUrl(photoId: string, size: 'thumb' | 'small' | 'medium' | 'large' = 'medium'): string {
-    return `${API_BASE_URL}/api/media/${photoId}?size=${size}`;
+    return `${API_BASE_URL}/media/${photoId}?size=${size}`;
   }
 
   getThumbnailUrl(photoId: string): string {

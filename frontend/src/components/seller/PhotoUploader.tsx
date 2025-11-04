@@ -103,11 +103,12 @@ export function PhotoUploader({
 
     } catch (error) {
       console.error('Upload failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Upload failed. Please try again.';
       setUploadProgress(prev => 
         prev.map(p => ({ 
           ...p, 
           status: 'error' as const, 
-          error: 'Upload failed. Please try again.' 
+          error: errorMessage
         }))
       );
     } finally {
