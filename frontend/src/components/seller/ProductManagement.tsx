@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ProductList } from './ProductList';
 import { ProductCreationWorkflow } from './ProductCreationWorkflow';
 import { ProductWithDetails } from '../../types/product';
+import { productService } from '../../services/product.service';
 
 interface ProductManagementProps {
   onBack: () => void;
@@ -13,6 +14,18 @@ export function ProductManagement({ onBack }: ProductManagementProps) {
   const [currentView, setCurrentView] = useState<ManagementView>('list');
   const [editingProduct, setEditingProduct] = useState<ProductWithDetails | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [showBatchModal, setShowBatchModal] = useState(false);
+  const [batchPublishing, setBatchPublishing] = useState(false);
+  const [batchResults, setBatchResults] = useState<{
+    publishedCount: number;
+    failedCount: number;
+    results: Array<{
+      productId: string;
+      title: string;
+      success: boolean;
+      error: string | null;
+    }>;
+  } | null>(null);
 
   const handleCreateProduct = () => {
     setCurrentView('create');
@@ -43,6 +56,25 @@ export function ProductManagement({ onBack }: ProductManagementProps) {
     }
   };
 
+  const handleBatchPublish = async () => {
+    setBatchPublishing(true);
+    try {
+      const results = await productService.batchPublishProducts();
+      setBatchResults(results);
+      setRefreshTrigger(prev => prev + 1); // Refresh the product list
+    } catch (error) {
+      console.error('Batch publish failed:', error);
+      alert('Failed to publish products. Please try again.');
+    } finally {
+      setBatchPublishing(false);
+    }
+  };
+
+  const closeBatchModal = () => {
+    setShowBatchModal(false);
+    setBatchResults(null);
+  };
+
   const renderHeader = () => {
     const titles = {
       list: 'Product Management',
@@ -55,15 +87,26 @@ export function ProductManagement({ onBack }: ProductManagementProps) {
         <h2 className="text-xl font-bold text-gray-900">{titles[currentView]}</h2>
         <div className="flex items-center space-x-3">
           {currentView === 'list' && (
-            <button
-              onClick={handleCreateProduct}
-              className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
-            >
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              Create Product
-            </button>
+            <>
+              <button
+                onClick={() => setShowBatchModal(true)}
+                className="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Batch Publish
+              </button>
+              <button
+                onClick={handleCreateProduct}
+                className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Create Product
+              </button>
+            </>
           )}
           <button
             onClick={handleCancel}
@@ -214,6 +257,88 @@ export function ProductManagement({ onBack }: ProductManagementProps) {
     <div className="space-y-6">
       {renderHeader()}
       {renderContent()}
+      
+      {/* Batch Publish Modal */}
+      {showBatchModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Batch Publish Products
+            </h3>
+            
+            {!batchResults ? (
+              <>
+                <p className="text-sm text-gray-600 mb-6">
+                  This will publish all your unpublished (draft) products that have at least one photo and one category. Products without photos or categories will be skipped.
+                </p>
+                
+                <div className="flex justify-end space-x-3">
+                  <button
+                    onClick={closeBatchModal}
+                    disabled={batchPublishing}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleBatchPublish}
+                    disabled={batchPublishing}
+                    className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
+                  >
+                    {batchPublishing ? (
+                      <div className="flex items-center">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Publishing...
+                      </div>
+                    ) : (
+                      'Publish All'
+                    )}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-gray-700">Published:</span>
+                    <span className="text-sm font-semibold text-green-600">{batchResults.publishedCount}</span>
+                  </div>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-sm font-medium text-gray-700">Failed:</span>
+                    <span className="text-sm font-semibold text-red-600">{batchResults.failedCount}</span>
+                  </div>
+                </div>
+                
+                {batchResults.results.length > 0 && (
+                  <div className="max-h-60 overflow-y-auto mb-4">
+                    <div className="space-y-2">
+                      {batchResults.results.map((result, index) => (
+                        <div key={index} className={`p-2 rounded text-sm ${
+                          result.success ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
+                        }`}>
+                          <div className="font-medium">{result.title}</div>
+                          {result.error && (
+                            <div className="text-xs mt-1">{result.error}</div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                <div className="flex justify-end">
+                  <button
+                    onClick={closeBatchModal}
+                    className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  >
+                    Close
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

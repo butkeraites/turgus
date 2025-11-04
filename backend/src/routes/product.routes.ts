@@ -8,7 +8,8 @@ import {
   unpublishProduct,
   getProducts,
   getSellerProducts,
-  recordProductView
+  recordProductView,
+  batchPublishProducts
 } from '../controllers/product.controller'
 import { authenticateToken, requireSeller } from '../utils/auth'
 
@@ -16,6 +17,7 @@ const router = Router()
 
 // Seller dashboard routes (must be before /:id routes)
 router.get('/seller', authenticateToken, requireSeller, getSellerProducts) // Get seller's products
+router.post('/batch/publish', authenticateToken, requireSeller, batchPublishProducts) // Batch publish products
 
 // Public routes (no authentication required)
 router.get('/', getProducts) // Get products with filtering and pagination

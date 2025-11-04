@@ -85,6 +85,20 @@ class ProductService {
   async recordView(productId: string): Promise<void> {
     await axios.post(`${API_BASE_URL}/products/${productId}/view`, {});
   }
+
+  async batchPublishProducts(): Promise<{
+    publishedCount: number;
+    failedCount: number;
+    results: Array<{
+      productId: string;
+      title: string;
+      success: boolean;
+      error: string | null;
+    }>;
+  }> {
+    const response = await axios.post(`${API_BASE_URL}/products/batch/publish`, {});
+    return response.data.data;
+  }
 }
 
 export const productService = new ProductService();

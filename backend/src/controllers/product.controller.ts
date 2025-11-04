@@ -391,10 +391,13 @@ export const publishProduct = async (req: AuthenticatedRequest, res: Response): 
       return
     }
 
+    // Fetch the full product details including photos and categories
+    const publishedProductWithDetails = await repositories.product.findByIdWithDetails(productId)
+
     res.json({
       success: true,
       message: 'Product published successfully',
-      data: publishedProduct
+      data: publishedProductWithDetails
     })
   } catch (error) {
     console.error('Publish product error:', error)
@@ -466,10 +469,13 @@ export const unpublishProduct = async (req: AuthenticatedRequest, res: Response)
       return
     }
 
+    // Fetch the full product details including photos and categories
+    const unpublishedProductWithDetails = await repositories.product.findByIdWithDetails(productId)
+
     res.json({
       success: true,
       message: 'Product unpublished successfully',
-      data: unpublishedProduct
+      data: unpublishedProductWithDetails
     })
   } catch (error) {
     console.error('Unpublish product error:', error)
@@ -567,6 +573,122 @@ export const getSellerProducts = async (req: AuthenticatedRequest, res: Response
     res.status(500).json({
       error: 'Internal server error',
       message: 'An error occurred while retrieving seller products'
+    })
+  }
+}
+
+/**
+ * Batch publish products (seller only)
+ */
+export const batchPublishProducts = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    if (!req.user || req.user.userType !== 'seller') {
+      res.status(403).json({
+        error: 'Access denied',
+        message: 'Seller access required'
+      })
+      return
+    }
+
+    // Get all draft products for this seller
+    const draftProducts = await repositories.product.findBySeller(req.user.userId, { 
+      page: 1, 
+      limit: 1000, 
+      offset: 0 
+    })
+
+    const unpublishedProducts = draftProducts.data.filter(product => product.status === 'draft')
+
+    if (unpublishedProducts.length === 0) {
+      res.json({
+        success: true,
+        message: 'No unpublished products found',
+        data: {
+          publishedCount: 0,
+          failedCount: 0,
+          results: []
+        }
+      })
+      return
+    }
+
+    const results = []
+    let publishedCount = 0
+    let failedCount = 0
+
+    // Process each unpublished product
+    for (const product of unpublishedProducts) {
+      try {
+        // Validate that product has required data for publication
+        const productWithDetails = await repositories.product.findByIdWithDetails(product.id)
+        
+        if (!productWithDetails?.photos || productWithDetails.photos.length === 0) {
+          results.push({
+            productId: product.id,
+            title: product.title,
+            success: false,
+            error: 'Product must have at least one photo to be published'
+          })
+          failedCount++
+          continue
+        }
+
+        if (!productWithDetails?.categories || productWithDetails.categories.length === 0) {
+          results.push({
+            productId: product.id,
+            title: product.title,
+            success: false,
+            error: 'Product must have at least one category to be published'
+          })
+          failedCount++
+          continue
+        }
+
+        // Publish the product
+        const publishedProduct = await repositories.product.publish(product.id)
+        
+        if (publishedProduct) {
+          results.push({
+            productId: product.id,
+            title: product.title,
+            success: true,
+            error: null
+          })
+          publishedCount++
+        } else {
+          results.push({
+            productId: product.id,
+            title: product.title,
+            success: false,
+            error: 'Failed to publish product'
+          })
+          failedCount++
+        }
+      } catch (error) {
+        results.push({
+          productId: product.id,
+          title: product.title,
+          success: false,
+          error: error instanceof Error ? error.message : 'Unknown error'
+        })
+        failedCount++
+      }
+    }
+
+    res.json({
+      success: true,
+      message: `Batch publish completed: ${publishedCount} published, ${failedCount} failed`,
+      data: {
+        publishedCount,
+        failedCount,
+        results
+      }
+    })
+  } catch (error) {
+    console.error('Batch publish error:', error)
+    res.status(500).json({
+      error: 'Internal server error',
+      message: 'An error occurred during batch publish'
     })
   }
 }

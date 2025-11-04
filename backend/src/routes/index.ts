@@ -55,7 +55,8 @@ router.get('/', (_req, res) => {
         deleteProduct: 'DELETE /api/products/:id',
         publishProduct: 'POST /api/products/:id/publish',
         unpublishProduct: 'POST /api/products/:id/unpublish',
-        getSellerProducts: 'GET /api/products/seller'
+        getSellerProducts: 'GET /api/products/seller',
+        batchPublishProducts: 'POST /api/products/batch/publish'
       },
       wantLists: {
         getBuyerWantList: 'GET /api/want-lists',
