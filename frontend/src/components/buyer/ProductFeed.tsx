@@ -38,7 +38,7 @@ export function ProductFeed({ filters }: ProductFeedProps) {
         page: pageNum,
         limit: 20,
         // If no status filter is set, show all published products
-        status: filters.status || ['available', 'reserved', 'sold']
+        ...(filters.status === undefined && { status: ['available', 'reserved', 'sold'] })
       }, bustCache);
 
       if (reset || pageNum === 1) {

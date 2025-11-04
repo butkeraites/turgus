@@ -167,8 +167,14 @@ export const PaginationSchema = z.object({
 })
 
 export const ProductFiltersSchema = z.object({
-  category_ids: z.array(UUIDSchema).optional(),
-  status: z.array(ProductStatusSchema).optional(),
+  category_ids: z.union([
+    z.array(UUIDSchema),
+    UUIDSchema.transform(val => [val])
+  ]).optional(),
+  status: z.union([
+    z.array(ProductStatusSchema),
+    ProductStatusSchema.transform(val => [val])
+  ]).optional(),
   min_price: z.coerce.number().positive().optional(),
   max_price: z.coerce.number().positive().optional(),
   search: z.string().optional(),

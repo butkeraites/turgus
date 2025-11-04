@@ -310,13 +310,22 @@ export class ProductRepository extends BaseRepository implements IProductReposit
   }
 
   async findWithFilters(filters: ProductFilters, buyerId?: string): Promise<PaginatedResult<ProductWithPhotos>> {
-    // Debug logging - remove after testing
-    console.log('findWithFilters called with:', { filters, buyerId });
-    
     // Build WHERE conditions
     const conditions: string[] = []
     const params: any[] = []
     let paramIndex = 1
+    
+    // Add buyerId parameter for product_views join if needed
+    let buyerParamIndex = null;
+    if (buyerId) {
+      buyerParamIndex = paramIndex++;
+      params.push(buyerId);
+    }
+
+    // For buyers, always exclude draft products
+    if (buyerId) {
+      conditions.push(`p.status != 'draft'`);
+    }
     
     // Category filter
     if (filters.category_ids && filters.category_ids.length > 0) {
@@ -346,30 +355,22 @@ export class ProductRepository extends BaseRepository implements IProductReposit
     
     // Search filter
     if (filters.search) {
-      conditions.push(`(p.title ILIKE $${paramIndex++} OR p.description ILIKE $${paramIndex++})`)
+
       params.push(`%${filters.search}%`, `%${filters.search}%`)
     }
     
-    // Viewed filter (only if buyerId is provided)
+    // Viewed filter (only if buyerId is provided) - reuse the same parameter as the JOIN
     if (buyerId && filters.viewed !== undefined) {
       if (filters.viewed) {
-        conditions.push(`EXISTS (SELECT 1 FROM product_views pv WHERE pv.product_id = p.id AND pv.buyer_id = $${paramIndex++})`)
+        conditions.push(`EXISTS (SELECT 1 FROM product_views pv2 WHERE pv2.product_id = p.id AND pv2.buyer_id = $${buyerParamIndex})`)
       } else {
-        conditions.push(`NOT EXISTS (SELECT 1 FROM product_views pv WHERE pv.product_id = p.id AND pv.buyer_id = $${paramIndex++})`)
+        conditions.push(`NOT EXISTS (SELECT 1 FROM product_views pv2 WHERE pv2.product_id = p.id AND pv2.buyer_id = $${buyerParamIndex})`)
       }
-      params.push(buyerId)
     }
     
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''
     const orderClause = this.buildOrderClause(filters.sort_by, filters.sort_order)
-    
-    // Add buyerId parameter for product_views join if needed
-    let buyerParamIndex = null;
-    if (buyerId) {
-      buyerParamIndex = paramIndex++;
-      params.push(buyerId);
-      console.log('Added buyerId to params:', { buyerId, buyerParamIndex, paramsLength: params.length });
-    }
+
 
     const baseQuery = `
       SELECT 
@@ -426,17 +427,7 @@ export class ProductRepository extends BaseRepository implements IProductReposit
       offset: (filters.page - 1) * filters.limit
     }
     
-    console.log('Executing query with params:', { params, baseQuery: baseQuery.substring(0, 200) + '...' });
-    
     const result = await this.createPaginatedResult<any>(baseQuery, countQuery, params, pagination)
-    
-    console.log('Query result sample:', result.data.length > 0 ? {
-      sampleProduct: {
-        id: result.data[0].id,
-        title: result.data[0].title,
-        is_viewed: result.data[0].is_viewed
-      }
-    } : 'No products returned');
     
     // Transform the result to match ProductWithPhotos interface
     const transformedData = result.data.map(row => ({
