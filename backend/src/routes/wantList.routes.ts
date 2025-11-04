@@ -5,6 +5,7 @@ import {
   removeFromWantList,
   getSellerWantLists,
   cancelWantList,
+  completeWantList,
   cleanupEmptyWantLists
 } from '../controllers/wantList.controller'
 import { authenticateToken, requireBuyer, requireSeller } from '../utils/auth'
@@ -19,6 +20,7 @@ router.delete('/items/:id', authenticateToken, requireBuyer, removeFromWantList)
 // Seller routes (authentication + seller role required)
 router.get('/seller', authenticateToken, requireSeller, getSellerWantLists) // Get all want lists for seller
 router.delete('/seller/:id', authenticateToken, requireSeller, cancelWantList) // Cancel want list
+router.post('/seller/:id/complete', authenticateToken, requireSeller, completeWantList) // Complete want list
 router.post('/seller/cleanup', authenticateToken, requireSeller, cleanupEmptyWantLists) // Cleanup empty want lists
 
 export default router

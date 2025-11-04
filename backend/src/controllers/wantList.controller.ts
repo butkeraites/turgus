@@ -269,6 +269,66 @@ export const cancelWantList = async (req: AuthenticatedRequest, res: Response): 
 }
 
 /**
+ * Complete a want list (seller action)
+ */
+export const completeWantList = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    if (!req.user || req.user.userType !== 'seller') {
+      res.status(403).json({
+        error: 'Access denied',
+        message: 'Seller access required'
+      })
+      return
+    }
+
+    const idValidation = UUIDSchema.safeParse(req.params.id)
+    if (!idValidation.success) {
+      res.status(400).json({
+        error: 'Validation error',
+        message: 'Invalid want list ID format'
+      })
+      return
+    }
+
+    const wantListId = idValidation.data
+
+    // Verify that the want list contains seller's products
+    const sellerWantLists = await repositories.wantList.findBySeller(req.user.userId)
+    const wantListExists = sellerWantLists.some(wl => wl.id === wantListId)
+
+    if (!wantListExists) {
+      res.status(404).json({
+        error: 'Want list not found',
+        message: 'Want list not found or does not contain your products'
+      })
+      return
+    }
+
+    // Complete the want list
+    const completed = await repositories.wantList.complete(wantListId)
+
+    if (!completed) {
+      res.status(500).json({
+        error: 'Internal server error',
+        message: 'Failed to complete the want list'
+      })
+      return
+    }
+
+    res.json({
+      success: true,
+      message: 'Want list completed successfully'
+    })
+  } catch (error) {
+    console.error('Complete want list error:', error)
+    res.status(500).json({
+      error: 'Internal server error',
+      message: 'An error occurred while completing the want list'
+    })
+  }
+}
+
+/**
  * Clean up empty want lists (maintenance endpoint)
  */
 export const cleanupEmptyWantLists = async (req: AuthenticatedRequest, res: Response): Promise<void> => {

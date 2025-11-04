@@ -67,6 +67,12 @@ class WantListService {
       headers: this.getAuthHeaders(),
     });
   }
+
+  async completeWantList(wantListId: string): Promise<void> {
+    await axios.post(`${API_BASE_URL}/want-lists/seller/${wantListId}/complete`, {}, {
+      headers: this.getAuthHeaders(),
+    });
+  }
 }
 
 export const wantListService = new WantListService();

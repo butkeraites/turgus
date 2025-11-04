@@ -11,6 +11,7 @@ export function OrderManagement() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [cancellingLists, setCancellingLists] = useState<Set<string>>(new Set());
+  const [completingLists, setCompletingLists] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     loadWantLists();
@@ -46,6 +47,29 @@ export function OrderManagement() {
       setError('Failed to cancel want list');
     } finally {
       setCancellingLists(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(wantListId);
+        return newSet;
+      });
+    }
+  };
+
+  const handleCompleteWantList = async (wantListId: string) => {
+    if (!confirm('Are you sure you want to confirm this order as completed? This will mark all products as sold and cannot be undone.')) {
+      return;
+    }
+
+    try {
+      setCompletingLists(prev => new Set(prev).add(wantListId));
+      await wantListService.completeWantList(wantListId);
+      
+      // Reload want lists to get updated data
+      await loadWantLists();
+    } catch (err) {
+      console.error('Error completing want list:', err);
+      setError('Failed to complete want list');
+    } finally {
+      setCompletingLists(prev => {
         const newSet = new Set(prev);
         newSet.delete(wantListId);
         return newSet;
@@ -104,9 +128,9 @@ export function OrderManagement() {
       {/* Summary */}
       <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
         <h3 className="text-lg font-medium text-indigo-900 mb-2">Order Summary</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
           <div>
-            <p className="text-indigo-700">Active Want Lists</p>
+            <p className="text-indigo-700">Active Orders</p>
             <p className="text-2xl font-bold text-indigo-900">{wantLists.length}</p>
           </div>
           <div>
@@ -116,12 +140,23 @@ export function OrderManagement() {
             </p>
           </div>
           <div>
-            <p className="text-indigo-700">Total Value</p>
+            <p className="text-indigo-700">Pending Revenue</p>
             <p className="text-2xl font-bold text-indigo-900">
               {formatPrice(wantLists.reduce((sum, wl) => sum + wl.totalPrice, 0))}
             </p>
           </div>
+          <div>
+            <p className="text-green-700">Ready to Confirm</p>
+            <p className="text-2xl font-bold text-green-900">{wantLists.length}</p>
+          </div>
         </div>
+        {wantLists.length > 0 && (
+          <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-md">
+            <p className="text-sm text-green-800">
+              💰 When you confirm orders, the total value of <strong>{formatPrice(wantLists.reduce((sum, wl) => sum + wl.totalPrice, 0))}</strong> will be recorded as received revenue.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Want Lists */}
@@ -251,15 +286,31 @@ export function OrderManagement() {
             {/* Actions */}
             <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
               <div className="flex justify-between items-center">
-                <p className="text-sm text-gray-600">
-                  Contact the buyer to arrange pickup or delivery
-                </p>
-                <div className="flex space-x-3">
+                <div className="flex items-center space-x-4">
+                  <p className="text-sm text-gray-600">
+                    Contact buyer: 
+                  </p>
                   <button
                     onClick={() => window.open(`tel:${wantList.buyer.telephone}`, '_self')}
-                    className="px-4 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors"
+                    className="text-blue-600 hover:text-blue-800 underline text-sm"
                   >
-                    Call Buyer
+                    {wantList.buyer.telephone}
+                  </button>
+                </div>
+                <div className="flex space-x-3">
+                  <button
+                    onClick={() => wantList.id && handleCompleteWantList(wantList.id)}
+                    disabled={!wantList.id || completingLists.has(wantList.id)}
+                    className="px-4 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center space-x-2"
+                  >
+                    {wantList.id && completingLists.has(wantList.id) ? (
+                      <>
+                        <LoadingSpinner size="sm" />
+                        <span>Confirming...</span>
+                      </>
+                    ) : (
+                      <span>Confirm Order</span>
+                    )}
                   </button>
                   <button
                     onClick={() => wantList.id && handleCancelWantList(wantList.id)}
