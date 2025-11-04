@@ -7,10 +7,11 @@ import { formatPrice } from '../../utils/currency';
 interface ProductListProps {
   onEditProduct: (product: ProductWithDetails) => void;
   onDeleteProduct: (productId: string) => void;
+  onProductUpdated?: () => void;
   refreshTrigger?: number;
 }
 
-export function ProductList({ onEditProduct, onDeleteProduct, refreshTrigger }: ProductListProps) {
+export function ProductList({ onEditProduct, onDeleteProduct, onProductUpdated, refreshTrigger }: ProductListProps) {
   const [products, setProducts] = useState<ProductWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -55,6 +56,9 @@ export function ProductList({ onEditProduct, onDeleteProduct, refreshTrigger }: 
       setProducts(prev => 
         prev.map(p => p.id === productId ? updatedProduct : p)
       );
+      
+      // Notify parent component about the update
+      onProductUpdated?.();
     } catch (error) {
       console.error('Failed to toggle publish status:', error);
       alert('Failed to update product status. Please try again.');

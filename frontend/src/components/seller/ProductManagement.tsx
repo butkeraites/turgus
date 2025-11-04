@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ProductList } from './ProductList';
 import { ProductCreationWorkflow } from './ProductCreationWorkflow';
 import { ProductWithDetails } from '../../types/product';
@@ -26,6 +26,47 @@ export function ProductManagement({ onBack }: ProductManagementProps) {
       error: string | null;
     }>;
   } | null>(null);
+  const [allProducts, setAllProducts] = useState<ProductWithDetails[]>([]);
+  const [statsLoading, setStatsLoading] = useState(true);
+
+  // Load all products for statistics
+  const loadAllProducts = async () => {
+    try {
+      setStatsLoading(true);
+      let allProductsData: ProductWithDetails[] = [];
+      let currentPage = 1;
+      let hasMore = true;
+
+      while (hasMore) {
+        const result = await productService.getSellerProducts(currentPage, 100);
+        allProductsData = [...allProductsData, ...result.data];
+        
+        if (currentPage >= result.pagination.total_pages) {
+          hasMore = false;
+        } else {
+          currentPage++;
+        }
+      }
+
+      setAllProducts(allProductsData);
+    } catch (error) {
+      console.error('Failed to load products for statistics:', error);
+    } finally {
+      setStatsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadAllProducts();
+  }, [refreshTrigger]);
+
+  // Calculate statistics
+  const stats = {
+    total: allProducts.length,
+    published: allProducts.filter(p => p.status === 'available').length,
+    drafts: allProducts.filter(p => p.status === 'draft').length,
+    sold: allProducts.filter(p => p.status === 'sold').length
+  };
 
   const handleCreateProduct = () => {
     setCurrentView('create');
@@ -37,8 +78,13 @@ export function ProductManagement({ onBack }: ProductManagementProps) {
   };
 
   const handleDeleteProduct = () => {
-    // Refresh the product list after deletion
+    // Refresh the product list and statistics after deletion
     setRefreshTrigger(prev => prev + 1);
+  };
+
+  const handleProductUpdated = () => {
+    // Refresh statistics when a product is updated (e.g., published/unpublished)
+    loadAllProducts();
   };
 
   const handleProductCreated = (product: ProductWithDetails) => {
@@ -61,7 +107,7 @@ export function ProductManagement({ onBack }: ProductManagementProps) {
     try {
       const results = await productService.batchPublishProducts();
       setBatchResults(results);
-      setRefreshTrigger(prev => prev + 1); // Refresh the product list
+      setRefreshTrigger(prev => prev + 1); // Refresh the product list and statistics
     } catch (error) {
       console.error('Batch publish failed:', error);
       alert('Failed to publish products. Please try again.');
@@ -168,7 +214,9 @@ export function ProductManagement({ onBack }: ProductManagementProps) {
                   </div>
                   <div className="ml-3">
                     <p className="text-sm font-medium text-gray-500">Total Products</p>
-                    <p className="text-lg font-semibold text-gray-900">-</p>
+                    <p className="text-lg font-semibold text-gray-900">
+                      {statsLoading ? '-' : stats.total}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -184,7 +232,9 @@ export function ProductManagement({ onBack }: ProductManagementProps) {
                   </div>
                   <div className="ml-3">
                     <p className="text-sm font-medium text-gray-500">Published</p>
-                    <p className="text-lg font-semibold text-gray-900">-</p>
+                    <p className="text-lg font-semibold text-gray-900">
+                      {statsLoading ? '-' : stats.published}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -200,7 +250,9 @@ export function ProductManagement({ onBack }: ProductManagementProps) {
                   </div>
                   <div className="ml-3">
                     <p className="text-sm font-medium text-gray-500">Drafts</p>
-                    <p className="text-lg font-semibold text-gray-900">-</p>
+                    <p className="text-lg font-semibold text-gray-900">
+                      {statsLoading ? '-' : stats.drafts}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -216,7 +268,9 @@ export function ProductManagement({ onBack }: ProductManagementProps) {
                   </div>
                   <div className="ml-3">
                     <p className="text-sm font-medium text-gray-500">Sold</p>
-                    <p className="text-lg font-semibold text-gray-900">-</p>
+                    <p className="text-lg font-semibold text-gray-900">
+                      {statsLoading ? '-' : stats.sold}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -245,6 +299,7 @@ export function ProductManagement({ onBack }: ProductManagementProps) {
               <ProductList
                 onEditProduct={handleEditProduct}
                 onDeleteProduct={handleDeleteProduct}
+                onProductUpdated={handleProductUpdated}
                 refreshTrigger={refreshTrigger}
               />
             </div>

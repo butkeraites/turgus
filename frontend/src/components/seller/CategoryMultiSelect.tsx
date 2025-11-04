@@ -20,7 +20,7 @@ export function CategoryMultiSelect({
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [isCreating, setIsCreating] = useState(false);
-  const [loadError, setLoadError] = useState<string | null>(null);
+
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -41,14 +41,14 @@ export function CategoryMultiSelect({
   const loadCategories = async () => {
     try {
       setLoading(true);
-      setLoadError(null);
+
       const fetchedCategories = await productService.getCategories();
       console.log('Loaded categories:', fetchedCategories);
       setCategories(Array.isArray(fetchedCategories) ? fetchedCategories : []);
     } catch (error) {
       console.error('Failed to load categories:', error);
       setCategories([]);
-      setLoadError('Failed to load categories. Please try again.');
+
     } finally {
       setLoading(false);
     }
