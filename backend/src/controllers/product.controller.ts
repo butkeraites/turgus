@@ -63,10 +63,13 @@ export const createProduct = async (req: AuthenticatedRequest, res: Response): P
     // Create the product
     const product = await repositories.product.create(req.user.userId, productData)
 
+    // Fetch the full product details including photos and categories
+    const productWithDetails = await repositories.product.findByIdWithDetails(product.id)
+
     res.status(201).json({
       success: true,
       message: 'Product created successfully',
-      data: product
+      data: productWithDetails
     })
   } catch (error) {
     console.error('Create product error:', error)

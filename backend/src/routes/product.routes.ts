@@ -14,6 +14,9 @@ import { authenticateToken, requireSeller } from '../utils/auth'
 
 const router = Router()
 
+// Seller dashboard routes (must be before /:id routes)
+router.get('/seller', authenticateToken, requireSeller, getSellerProducts) // Get seller's products
+
 // Public routes (no authentication required)
 router.get('/', getProducts) // Get products with filtering and pagination
 router.get('/:id', getProduct) // Get single product by ID
@@ -27,8 +30,5 @@ router.put('/:id', authenticateToken, requireSeller, updateProduct) // Update pr
 router.delete('/:id', authenticateToken, requireSeller, deleteProduct) // Delete product
 router.post('/:id/publish', authenticateToken, requireSeller, publishProduct) // Publish product
 router.post('/:id/unpublish', authenticateToken, requireSeller, unpublishProduct) // Unpublish product
-
-// Seller dashboard routes
-router.get('/seller/products', authenticateToken, requireSeller, getSellerProducts) // Get seller's products
 
 export default router

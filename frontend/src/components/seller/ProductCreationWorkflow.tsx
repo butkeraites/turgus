@@ -220,7 +220,7 @@ export function ProductCreationWorkflow({ onProductCreated, onCancel, preSelecte
             </div>
             <div className="flex justify-between">
               <dt className="text-gray-500">Price:</dt>
-              <dd className="text-gray-900 font-medium">€{createdProduct.price.toFixed(2)}</dd>
+              <dd className="text-gray-900 font-medium">€{Number(createdProduct.price).toFixed(2)}</dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-gray-500">Status:</dt>
@@ -228,11 +228,11 @@ export function ProductCreationWorkflow({ onProductCreated, onCancel, preSelecte
             </div>
             <div className="flex justify-between">
               <dt className="text-gray-500">Photos:</dt>
-              <dd className="text-gray-900 font-medium">{createdProduct.photos.length}</dd>
+              <dd className="text-gray-900 font-medium">{createdProduct.photos?.length || 0}</dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-gray-500">Categories:</dt>
-              <dd className="text-gray-900 font-medium">{createdProduct.categories.length}</dd>
+              <dd className="text-gray-900 font-medium">{createdProduct.categories?.length || 0}</dd>
             </div>
           </dl>
         </div>

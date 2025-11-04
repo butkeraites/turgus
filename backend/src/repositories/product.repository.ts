@@ -35,7 +35,13 @@ export class ProductRepository extends BaseRepository implements IProductReposit
       
       // Add categories
       if (data.category_ids && data.category_ids.length > 0) {
-        await this.addCategories(product.id, data.category_ids)
+        const values = data.category_ids.map((_, index) => `($1, $${index + 2})`).join(', ')
+        const categoryQuery = `
+          INSERT INTO product_categories (product_id, category_id)
+          VALUES ${values}
+          ON CONFLICT (product_id, category_id) DO NOTHING
+        `
+        await client.query(categoryQuery, [product.id, ...data.category_ids])
       }
       
       // Assign photos to product
