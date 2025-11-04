@@ -98,8 +98,17 @@ export function ProductDetail() {
 
 
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pt-PT', {
+  const formatDate = (dateString: string | null | undefined) => {
+    if (!dateString) {
+      return 'Not available';
+    }
+    
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      return 'Invalid date';
+    }
+    
+    return date.toLocaleDateString('pt-PT', {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
