@@ -4,6 +4,7 @@ import { TrashIcon, ShoppingBagIcon } from '@heroicons/react/24/outline';
 import { wantListService } from '../../services/wantList.service';
 import { WantList as WantListType } from '../../types/wantList';
 import { LoadingSpinner } from '../shared/LoadingSpinner';
+import { formatPrice } from '../../utils/currency';
 
 export function WantList() {
   const { t } = useTranslation('buyer');
@@ -49,12 +50,7 @@ export function WantList() {
     }
   };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('pt-PT', {
-      style: 'currency',
-      currency: 'EUR'
-    }).format(price);
-  };
+
 
   if (loading) {
     return (

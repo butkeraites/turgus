@@ -3,6 +3,7 @@ import { PhotoManager } from './PhotoManager';
 import { ProductForm } from './ProductForm';
 import { CreateProductData, ProductWithDetails } from '../../types/product';
 import { productService } from '../../services/product.service';
+import { formatPrice } from '../../utils/currency';
 
 interface ProductCreationWorkflowProps {
   onProductCreated: (product: ProductWithDetails) => void;
@@ -220,7 +221,7 @@ export function ProductCreationWorkflow({ onProductCreated, onCancel, preSelecte
             </div>
             <div className="flex justify-between">
               <dt className="text-gray-500">Price:</dt>
-              <dd className="text-gray-900 font-medium">€{Number(createdProduct.price).toFixed(2)}</dd>
+              <dd className="text-gray-900 font-medium">{formatPrice(Number(createdProduct.price))}</dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-gray-500">Status:</dt>

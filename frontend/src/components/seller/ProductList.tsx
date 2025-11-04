@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { ProductWithDetails } from '../../types/product';
 import { productService } from '../../services/product.service';
 import { mediaService } from '../../services/media.service';
+import { formatPrice } from '../../utils/currency';
 
 interface ProductListProps {
   onEditProduct: (product: ProductWithDetails) => void;
@@ -216,7 +217,7 @@ export function ProductList({ onEditProduct, onDeleteProduct, refreshTrigger }: 
                 
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-lg font-semibold text-gray-900">
-                    €{product.price.toFixed(2)}
+                    {formatPrice(product.price)}
                   </span>
                   <span className="text-xs text-gray-500">
                     {formatDate(product.createdAt)}

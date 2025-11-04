@@ -3,6 +3,7 @@ import { TrashIcon, UserIcon, PhoneIcon, MapPinIcon } from '@heroicons/react/24/
 import { wantListService } from '../../services/wantList.service';
 import { WantListWithBuyer } from '../../types/wantList';
 import { LoadingSpinner } from '../shared/LoadingSpinner';
+import { formatPrice } from '../../utils/currency';
 
 export function OrderManagement() {
   const [wantLists, setWantLists] = useState<WantListWithBuyer[]>([]);
@@ -51,12 +52,7 @@ export function OrderManagement() {
     }
   };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('pt-PT', {
-      style: 'currency',
-      currency: 'EUR'
-    }).format(price);
-  };
+
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-PT', {

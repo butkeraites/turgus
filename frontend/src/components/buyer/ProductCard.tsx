@@ -3,6 +3,7 @@ import { ProductWithDetails } from '../../types/product';
 import { EyeIcon } from '@heroicons/react/24/outline';
 import { LazyImage } from '../shared/LazyImage';
 import { useHapticFeedback } from '../../utils/haptics';
+import { formatPrice } from '../../utils/currency';
 
 interface ProductCardProps {
   product: ProductWithDetails;
@@ -23,13 +24,6 @@ export function ProductCard({ product, onClick }: ProductCardProps) {
     } else {
       navigate(`/buyer/product/${product.id}`);
     }
-  };
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('pt-PT', {
-      style: 'currency',
-      currency: 'EUR'
-    }).format(price);
   };
 
   return (

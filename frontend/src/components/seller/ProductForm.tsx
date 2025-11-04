@@ -184,11 +184,11 @@ export function ProductForm({
       {/* Price */}
       <div>
         <label htmlFor="price" className="block text-sm font-medium text-gray-700">
-          {t('product.form.price')} (€) <span className="text-red-500">*</span>
+          {t('product.form.price')} (R$) <span className="text-red-500">*</span>
         </label>
         <div className="mt-1 relative rounded-md shadow-sm">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <span className="text-gray-500 sm:text-sm">€</span>
+            <span className="text-gray-500 sm:text-sm">R$</span>
           </div>
           <input
             type="text"

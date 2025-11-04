@@ -8,6 +8,7 @@ import { LoadingSpinner } from '../shared/LoadingSpinner';
 import { CommentSection } from '../shared/CommentSection';
 import { ArrowLeftIcon, HeartIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
+import { formatPrice } from '../../utils/currency';
 
 export function ProductDetail() {
   const { productId } = useParams<{ productId: string }>();
@@ -95,12 +96,7 @@ export function ProductDetail() {
     }
   };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('pt-PT', {
-      style: 'currency',
-      currency: 'EUR'
-    }).format(price);
-  };
+
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('pt-PT', {
