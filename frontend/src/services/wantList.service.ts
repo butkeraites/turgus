@@ -44,7 +44,7 @@ class WantListService {
 
   // Seller methods
   async getSellerWantLists(): Promise<WantListWithBuyer[]> {
-    const response = await axios.get(`${API_BASE_URL}/seller/want-lists`, {
+    const response = await axios.get(`${API_BASE_URL}/want-lists/seller`, {
       headers: this.getAuthHeaders(),
     });
     
@@ -63,7 +63,7 @@ class WantListService {
   }
 
   async cancelWantList(wantListId: string): Promise<void> {
-    await axios.delete(`${API_BASE_URL}/seller/want-lists/${wantListId}`, {
+    await axios.delete(`${API_BASE_URL}/want-lists/seller/${wantListId}`, {
       headers: this.getAuthHeaders(),
     });
   }

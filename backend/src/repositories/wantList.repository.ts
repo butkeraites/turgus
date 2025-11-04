@@ -136,94 +136,120 @@ export class WantListRepository extends BaseRepository implements IWantListRepos
    * Find all want lists containing seller's products
    */
   async findBySeller(sellerId: string): Promise<WantListWithBuyer[]> {
+    // Simplified query to avoid complex aggregations that might cause issues
     const query = `
       SELECT DISTINCT
-        wl.*,
-        json_build_object(
-          'id', ba.id,
-          'name', ba.name,
-          'telephone', ba.telephone,
-          'address', ba.address
-        ) as buyer,
-        COALESCE(
-          json_agg(
-            json_build_object(
-              'id', wli.id,
-              'want_list_id', wli.want_list_id,
-              'product_id', wli.product_id,
-              'added_at', wli.added_at,
-              'product', json_build_object(
-                'id', p.id,
-                'seller_id', p.seller_id,
-                'title', p.title,
-                'description', p.description,
-                'price', p.price,
-                'status', p.status,
-                'created_at', p.created_at,
-                'updated_at', p.updated_at,
-                'published_at', p.published_at,
-                'photos', COALESCE(photos.photos, '[]'::json),
-                'categories', COALESCE(categories.categories, '[]'::json)
-              )
-            ) ORDER BY wli.added_at DESC
-          ) FILTER (WHERE wli.id IS NOT NULL AND p.seller_id = $1),
-          '[]'::json
-        ) as items,
-        COALESCE(SUM(CASE WHEN p.seller_id = $1 THEN p.price ELSE 0 END), 0) as total_price,
-        COUNT(CASE WHEN p.seller_id = $1 THEN wli.id END) as item_count
+        wl.id,
+        wl.buyer_id,
+        wl.status,
+        wl.created_at,
+        wl.updated_at,
+        ba.id as buyer_id_ref,
+        ba.name as buyer_name,
+        ba.telephone as buyer_telephone,
+        ba.address as buyer_address
       FROM want_lists wl
       JOIN buyer_accounts ba ON wl.buyer_id = ba.id
       JOIN want_list_items wli ON wl.id = wli.want_list_id
       JOIN products p ON wli.product_id = p.id
-      LEFT JOIN LATERAL (
-        SELECT json_agg(
-          json_build_object(
-            'id', pp.id,
-            'product_id', pp.product_id,
-            'filename', pp.filename,
-            'original_name', pp.original_name,
-            'mime_type', pp.mime_type,
-            'size', pp.size,
-            'sort_order', pp.sort_order,
-            'created_at', pp.created_at
-          ) ORDER BY pp.sort_order ASC
-        ) as photos
-        FROM product_photos pp
-        WHERE pp.product_id = p.id
-      ) photos ON true
-      LEFT JOIN LATERAL (
-        SELECT json_agg(
-          json_build_object(
-            'id', c.id,
-            'name', c.name,
-            'name_en', c.name_en,
-            'name_pt', c.name_pt,
-            'created_at', c.created_at
-          )
-        ) as categories
-        FROM product_categories pc
-        JOIN categories c ON pc.category_id = c.id
-        WHERE pc.product_id = p.id
-      ) categories ON true
       WHERE wl.status = 'active' AND p.seller_id = $1
-      GROUP BY wl.id, wl.buyer_id, wl.status, wl.created_at, wl.updated_at, ba.id, ba.name, ba.telephone, ba.address
-      HAVING COUNT(CASE WHEN p.seller_id = $1 THEN wli.id END) > 0
       ORDER BY wl.created_at DESC
     `
     
     const result = await this.pool.query(query, [sellerId])
     
-    return result.rows.map(row => ({
-      id: row.id,
-      buyer_id: row.buyer_id,
-      status: row.status,
-      created_at: row.created_at,
-      updated_at: row.updated_at,
-      buyer: row.buyer,
-      items: row.items || [],
-      total_price: parseFloat(row.total_price) || 0,
-      item_count: parseInt(row.item_count) || 0
-    }))
+    // For each want list, get the items separately
+    const wantLists: WantListWithBuyer[] = []
+    
+    for (const row of result.rows) {
+      // Get items for this want list
+      const itemsQuery = `
+        SELECT 
+          wli.id,
+          wli.want_list_id,
+          wli.product_id,
+          wli.added_at,
+          p.id as product_id,
+          p.seller_id,
+          p.title,
+          p.description,
+          p.price,
+          p.status,
+          p.created_at as product_created_at,
+          p.updated_at as product_updated_at,
+          p.published_at
+        FROM want_list_items wli
+        JOIN products p ON wli.product_id = p.id
+        WHERE wli.want_list_id = $1 AND p.seller_id = $2
+        ORDER BY wli.added_at DESC
+      `
+      
+      const itemsResult = await this.pool.query(itemsQuery, [row.id, sellerId])
+      
+      const items = []
+      let totalPrice = 0
+      
+      for (const itemRow of itemsResult.rows) {
+        // Get photos for this product
+        const photosQuery = `
+          SELECT id, product_id, filename, original_name, mime_type, size, sort_order, created_at
+          FROM product_photos
+          WHERE product_id = $1
+          ORDER BY sort_order ASC
+        `
+        const photosResult = await this.pool.query(photosQuery, [itemRow.product_id])
+        
+        // Get categories for this product
+        const categoriesQuery = `
+          SELECT c.id, c.name, c.name_en, c.name_pt, c.created_at
+          FROM product_categories pc
+          JOIN categories c ON pc.category_id = c.id
+          WHERE pc.product_id = $1
+        `
+        const categoriesResult = await this.pool.query(categoriesQuery, [itemRow.product_id])
+        
+        items.push({
+          id: itemRow.id,
+          want_list_id: itemRow.want_list_id,
+          product_id: itemRow.product_id,
+          added_at: itemRow.added_at,
+          product: {
+            id: itemRow.product_id,
+            seller_id: itemRow.seller_id,
+            title: itemRow.title,
+            description: itemRow.description,
+            price: itemRow.price,
+            status: itemRow.status,
+            created_at: itemRow.product_created_at,
+            updated_at: itemRow.product_updated_at,
+            published_at: itemRow.published_at,
+            photos: photosResult.rows,
+            categories: categoriesResult.rows
+          }
+        })
+        
+        totalPrice += parseFloat(itemRow.price) || 0
+      }
+      
+      wantLists.push({
+        id: row.id,
+        buyer_id: row.buyer_id,
+        status: row.status,
+        created_at: row.created_at,
+        updated_at: row.updated_at,
+        buyer: {
+          id: row.buyer_id_ref,
+          name: row.buyer_name,
+          telephone: row.buyer_telephone,
+          address: row.buyer_address
+        },
+        items: items,
+        total_price: totalPrice,
+        item_count: items.length
+      })
+    }
+    
+    return wantLists
   }
 
   /**
