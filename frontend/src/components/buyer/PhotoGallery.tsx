@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { ProductPhoto } from '../../types/product';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { useSwipeGesture } from '../../hooks/useSwipeGesture';
+import { mediaService } from '../../services/media.service';
 
 interface PhotoGalleryProps {
   photos: ProductPhoto[];
@@ -69,7 +70,7 @@ export function PhotoGallery({ photos }: PhotoGalleryProps) {
       {/* Main Image */}
       <div className="w-full h-full flex items-center justify-center">
         <img
-          src={`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/media/${currentPhoto.id}`}
+          src={mediaService.getPhotoUrl(currentPhoto.id, 'large')}
           alt={`Product photo ${currentIndex + 1}`}
           className="max-w-full max-h-full object-contain"
           loading="lazy"
@@ -118,7 +119,7 @@ export function PhotoGallery({ photos }: PhotoGalleryProps) {
               }`}
             >
               <img
-                src={`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/media/${photo.id}`}
+                src={mediaService.getPhotoUrl(photo.id, 'thumb')}
                 alt={`Thumbnail ${index + 1}`}
                 className="w-full h-full object-cover"
               />

@@ -11,7 +11,7 @@ class WantListService {
 
   // Buyer methods
   async getBuyerWantList(): Promise<WantList> {
-    const response = await axios.get(`${API_BASE_URL}/api/want-lists`, {
+    const response = await axios.get(`${API_BASE_URL}/want-lists`, {
       headers: this.getAuthHeaders(),
     });
     
@@ -31,20 +31,20 @@ class WantListService {
 
   async addToWantList(productId: string): Promise<void> {
     const data: AddToWantListData = { product_id: productId };
-    await axios.post(`${API_BASE_URL}/api/want-lists/items`, data, {
+    await axios.post(`${API_BASE_URL}/want-lists/items`, data, {
       headers: this.getAuthHeaders(),
     });
   }
 
   async removeFromWantList(itemId: string): Promise<void> {
-    await axios.delete(`${API_BASE_URL}/api/want-lists/items/${itemId}`, {
+    await axios.delete(`${API_BASE_URL}/want-lists/items/${itemId}`, {
       headers: this.getAuthHeaders(),
     });
   }
 
   // Seller methods
   async getSellerWantLists(): Promise<WantListWithBuyer[]> {
-    const response = await axios.get(`${API_BASE_URL}/api/seller/want-lists`, {
+    const response = await axios.get(`${API_BASE_URL}/seller/want-lists`, {
       headers: this.getAuthHeaders(),
     });
     
@@ -63,7 +63,7 @@ class WantListService {
   }
 
   async cancelWantList(wantListId: string): Promise<void> {
-    await axios.delete(`${API_BASE_URL}/api/seller/want-lists/${wantListId}`, {
+    await axios.delete(`${API_BASE_URL}/seller/want-lists/${wantListId}`, {
       headers: this.getAuthHeaders(),
     });
   }

@@ -104,17 +104,17 @@ export const buyerRegister = async (req: Request, res: Response): Promise<void> 
  */
 export const buyerLogin = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { email, password } = req.body
+    const { telephone, password } = req.body
 
-    if (!email || !password) {
+    if (!telephone || !password) {
       res.status(400).json({
         error: 'Validation error',
-        message: 'Email and password are required'
+        message: 'Telephone and password are required'
       })
       return
     }
 
-    const authResult = await authenticateBuyer({ email, password })
+    const authResult = await authenticateBuyer({ telephone, password })
 
     res.json({
       success: true,
@@ -124,10 +124,10 @@ export const buyerLogin = async (req: Request, res: Response): Promise<void> => 
   } catch (error) {
     console.error('Buyer login error:', error)
     
-    if (error instanceof Error && error.message === 'Invalid email or password') {
+    if (error instanceof Error && error.message === 'Invalid telephone or password') {
       res.status(401).json({
         error: 'Authentication failed',
-        message: 'Invalid email or password'
+        message: 'Invalid telephone or password'
       })
     } else {
       res.status(500).json({

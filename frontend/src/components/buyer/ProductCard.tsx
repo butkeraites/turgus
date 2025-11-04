@@ -4,6 +4,7 @@ import { EyeIcon } from '@heroicons/react/24/outline';
 import { LazyImage } from '../shared/LazyImage';
 import { useHapticFeedback } from '../../utils/haptics';
 import { formatPrice } from '../../utils/currency';
+import { mediaService } from '../../services/media.service';
 
 interface ProductCardProps {
   product: ProductWithDetails;
@@ -35,7 +36,7 @@ export function ProductCard({ product, onClick }: ProductCardProps) {
       <div className="w-full h-full rounded-lg overflow-hidden bg-gray-200">
         {primaryPhoto ? (
           <LazyImage
-            src={`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/media/${primaryPhoto.id}`}
+            src={mediaService.getPhotoUrl(primaryPhoto.id, 'medium')}
             alt={product.title}
             className={`transition-all duration-300 ${
               isAvailable 

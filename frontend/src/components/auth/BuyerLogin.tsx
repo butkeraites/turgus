@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface BuyerLoginProps {
@@ -11,8 +12,9 @@ interface BuyerLoginProps {
 export function BuyerLogin({ onSuccess, onCancel, onSwitchToRegister }: BuyerLoginProps) {
   const { login, isLoading } = useAuth();
   const { t } = useTranslation('auth');
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    name: '',
+    telephone: '',
     password: '',
   });
   const [error, setError] = useState<string | null>(null);
@@ -22,8 +24,8 @@ export function BuyerLogin({ onSuccess, onCancel, onSwitchToRegister }: BuyerLog
     setError(null);
 
     // Validation
-    if (!formData.name.trim()) {
-      setError(t('buyer.name') + ' ' + t('common:forms.required'));
+    if (!formData.telephone.trim()) {
+      setError(t('buyer.telephone') + ' ' + t('common:forms.required'));
       return;
     }
     if (!formData.password) {
@@ -33,7 +35,12 @@ export function BuyerLogin({ onSuccess, onCancel, onSwitchToRegister }: BuyerLog
 
     try {
       await login(formData, 'buyer');
-      onSuccess?.();
+      // Redirect to buyer dashboard after successful login
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        navigate('/buyer');
+      }
     } catch (err: any) {
       const errorMessage = err.response?.data?.error?.message || t('errors.loginFailed');
       setError(errorMessage);
@@ -67,18 +74,18 @@ export function BuyerLogin({ onSuccess, onCancel, onSwitchToRegister }: BuyerLog
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                {t('buyer.name')}
+              <label htmlFor="telephone" className="block text-sm font-medium text-gray-700">
+                {t('buyer.telephone')}
               </label>
               <input
-                id="name"
-                name="name"
-                type="text"
+                id="telephone"
+                name="telephone"
+                type="tel"
                 required
-                value={formData.name}
+                value={formData.telephone}
                 onChange={handleChange}
                 className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder={t('buyer.name')}
+                placeholder={t('buyer.telephone')}
                 disabled={isLoading}
               />
             </div>

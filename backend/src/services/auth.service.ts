@@ -17,7 +17,7 @@ export interface BuyerRegisterRequest {
 }
 
 export interface BuyerLoginRequest {
-  email: string
+  telephone: string
   password: string
 }
 
@@ -146,18 +146,18 @@ export const registerBuyer = async (userData: BuyerRegisterRequest): Promise<Aut
  * Authenticate buyer login
  */
 export const authenticateBuyer = async (credentials: BuyerLoginRequest): Promise<AuthResponse> => {
-  const { email, password } = credentials
+  const { telephone, password } = credentials
 
-  if (!email || !password) {
-    throw new Error('Email and password are required')
+  if (!telephone || !password) {
+    throw new Error('Telephone and password are required')
   }
 
   // Query buyer account
-  const query = 'SELECT id, name, email, password_hash, language FROM buyer_accounts WHERE email = $1'
-  const result = await pool.query(query, [email])
+  const query = 'SELECT id, name, telephone, email, password_hash, language FROM buyer_accounts WHERE telephone = $1'
+  const result = await pool.query(query, [telephone])
 
   if (result.rows.length === 0) {
-    throw new Error('Invalid email or password')
+    throw new Error('Invalid telephone or password')
   }
 
   const buyer = result.rows[0]
@@ -165,7 +165,7 @@ export const authenticateBuyer = async (credentials: BuyerLoginRequest): Promise
   // Verify password
   const isValidPassword = await comparePassword(password, buyer.password_hash)
   if (!isValidPassword) {
-    throw new Error('Invalid email or password')
+    throw new Error('Invalid telephone or password')
   }
 
   // Generate JWT token

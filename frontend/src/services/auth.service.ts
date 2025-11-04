@@ -48,7 +48,7 @@ class AuthService {
 
   async loginBuyer(credentials: LoginCredentials): Promise<AuthResponse> {
     const response = await axios.post(`${API_BASE_URL}/auth/buyer/login`, {
-      name: credentials.name,
+      telephone: credentials.telephone,
       password: credentials.password,
     });
     

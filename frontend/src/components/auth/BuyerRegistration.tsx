@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface BuyerRegistrationProps {
@@ -11,6 +12,7 @@ interface BuyerRegistrationProps {
 export function BuyerRegistration({ onSuccess, onCancel, onSwitchToLogin }: BuyerRegistrationProps) {
   const { register, isLoading } = useAuth();
   const { t } = useTranslation('auth');
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
     telephone: '',
@@ -65,7 +67,12 @@ export function BuyerRegistration({ onSuccess, onCancel, onSwitchToLogin }: Buye
         address: formData.address,
         password: formData.password,
       });
-      onSuccess?.();
+      // Redirect to buyer dashboard after successful registration
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        navigate('/buyer');
+      }
     } catch (err: any) {
       const errorMessage = err.response?.data?.error?.message || t('errors.registrationFailed');
       setErrors({ general: errorMessage });

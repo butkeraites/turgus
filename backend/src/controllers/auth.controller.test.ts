@@ -80,14 +80,14 @@ describe('Auth Controller', () => {
   })
 
   describe('POST /auth/buyer/login', () => {
-    it('should return 400 when email or password is missing', async () => {
+    it('should return 400 when telephone or password is missing', async () => {
       const response = await request(app)
         .post('/auth/buyer/login')
         .send({})
 
       expect(response.status).toBe(400)
       expect(response.body.error).toBe('Validation error')
-      expect(response.body.message).toBe('Email and password are required')
+      expect(response.body.message).toBe('Telephone and password are required')
     })
   })
 

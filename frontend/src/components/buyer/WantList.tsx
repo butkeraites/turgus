@@ -5,6 +5,7 @@ import { wantListService } from '../../services/wantList.service';
 import { WantList as WantListType } from '../../types/wantList';
 import { LoadingSpinner } from '../shared/LoadingSpinner';
 import { formatPrice } from '../../utils/currency';
+import { mediaService } from '../../services/media.service';
 
 export function WantList() {
   const { t } = useTranslation('buyer');
@@ -118,7 +119,7 @@ export function WantList() {
               <div className="flex-shrink-0">
                 {item.product.photos && item.product.photos.length > 0 ? (
                   <img
-                    src={`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/media/${item.product.photos[0].id}`}
+                    src={mediaService.getPhotoUrl(item.product.photos[0].id, 'small')}
                     alt={item.product.title}
                     className="w-20 h-20 object-cover rounded-md"
                   />
