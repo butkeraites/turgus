@@ -11,49 +11,32 @@ import {
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 class ProductService {
-  private getAuthHeaders() {
-    const token = localStorage.getItem('token');
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  }
-
   async createProduct(productData: CreateProductData): Promise<ProductWithDetails> {
-    const response = await axios.post(`${API_BASE_URL}/api/products`, productData, {
-      headers: this.getAuthHeaders(),
-    });
+    const response = await axios.post(`${API_BASE_URL}/products`, productData);
     return response.data.data;
   }
 
   async updateProduct(productId: string, productData: UpdateProductData): Promise<ProductWithDetails> {
-    const response = await axios.put(`${API_BASE_URL}/api/products/${productId}`, productData, {
-      headers: this.getAuthHeaders(),
-    });
+    const response = await axios.put(`${API_BASE_URL}/products/${productId}`, productData);
     return response.data.data;
   }
 
   async deleteProduct(productId: string): Promise<void> {
-    await axios.delete(`${API_BASE_URL}/api/products/${productId}`, {
-      headers: this.getAuthHeaders(),
-    });
+    await axios.delete(`${API_BASE_URL}/products/${productId}`);
   }
 
   async publishProduct(productId: string): Promise<ProductWithDetails> {
-    const response = await axios.post(`${API_BASE_URL}/api/products/${productId}/publish`, {}, {
-      headers: this.getAuthHeaders(),
-    });
+    const response = await axios.post(`${API_BASE_URL}/products/${productId}/publish`, {});
     return response.data.data;
   }
 
   async unpublishProduct(productId: string): Promise<ProductWithDetails> {
-    const response = await axios.post(`${API_BASE_URL}/api/products/${productId}/unpublish`, {}, {
-      headers: this.getAuthHeaders(),
-    });
+    const response = await axios.post(`${API_BASE_URL}/products/${productId}/unpublish`, {});
     return response.data.data;
   }
 
   async getProduct(productId: string): Promise<ProductWithDetails> {
-    const response = await axios.get(`${API_BASE_URL}/api/products/${productId}`, {
-      headers: this.getAuthHeaders(),
-    });
+    const response = await axios.get(`${API_BASE_URL}/products/${productId}`);
     return response.data.data;
   }
 
@@ -72,9 +55,7 @@ class ProductService {
       });
     }
 
-    const response = await axios.get(`${API_BASE_URL}/api/products?${params.toString()}`, {
-      headers: this.getAuthHeaders(),
-    });
+    const response = await axios.get(`${API_BASE_URL}/products?${params.toString()}`);
     
     return {
       data: response.data.data,
@@ -83,9 +64,7 @@ class ProductService {
   }
 
   async getSellerProducts(page = 1, limit = 20): Promise<PaginatedProducts> {
-    const response = await axios.get(`${API_BASE_URL}/api/products/seller?page=${page}&limit=${limit}`, {
-      headers: this.getAuthHeaders(),
-    });
+    const response = await axios.get(`${API_BASE_URL}/products/seller?page=${page}&limit=${limit}`);
     
     return {
       data: response.data.data,
@@ -94,14 +73,17 @@ class ProductService {
   }
 
   async getCategories(): Promise<Category[]> {
-    const response = await axios.get(`${API_BASE_URL}/api/categories`);
+    const response = await axios.get(`${API_BASE_URL}/categories`);
     return response.data.data || response.data;
   }
 
+  async createCategory(data: { name: string; nameEn?: string; namePt?: string }): Promise<Category> {
+    const response = await axios.post(`${API_BASE_URL}/categories`, data);
+    return response.data.data;
+  }
+
   async recordView(productId: string): Promise<void> {
-    await axios.post(`${API_BASE_URL}/api/products/${productId}/view`, {}, {
-      headers: this.getAuthHeaders(),
-    });
+    await axios.post(`${API_BASE_URL}/products/${productId}/view`, {});
   }
 }
 

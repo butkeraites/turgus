@@ -51,6 +51,7 @@ export interface ICategoryRepository {
   findCategoryById(id: string): Promise<Category | null>
   findByIds(ids: string[]): Promise<Category[]>
   findByName(name: string): Promise<Category | null>
+  create(data: { name: string; nameEn?: string; namePt?: string }): Promise<Category>
 }
 
 // Product Repository Interface

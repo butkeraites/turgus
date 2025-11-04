@@ -7,13 +7,14 @@ import { productService } from '../../services/product.service';
 interface ProductCreationWorkflowProps {
   onProductCreated: (product: ProductWithDetails) => void;
   onCancel: () => void;
+  preSelectedPhotos?: Set<string>;
 }
 
 type WorkflowStep = 'photos' | 'form' | 'success';
 
-export function ProductCreationWorkflow({ onProductCreated, onCancel }: ProductCreationWorkflowProps) {
-  const [currentStep, setCurrentStep] = useState<WorkflowStep>('photos');
-  const [selectedPhotos, setSelectedPhotos] = useState<Set<string>>(new Set());
+export function ProductCreationWorkflow({ onProductCreated, onCancel, preSelectedPhotos }: ProductCreationWorkflowProps) {
+  const [currentStep, setCurrentStep] = useState<WorkflowStep>(preSelectedPhotos && preSelectedPhotos.size > 0 ? 'form' : 'photos');
+  const [selectedPhotos, setSelectedPhotos] = useState<Set<string>>(preSelectedPhotos || new Set());
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [createdProduct, setCreatedProduct] = useState<ProductWithDetails | null>(null);

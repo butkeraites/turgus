@@ -39,6 +39,36 @@ export function SellerDashboard() {
               selectedPhotos={selectedPhotos}
               onSelectionChange={setSelectedPhotos}
             />
+            
+            {/* Create Product Button - appears when photos are selected */}
+            {selectedPhotos.size > 0 && (
+              <div className="mt-6 p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-medium text-indigo-900">
+                      {selectedPhotos.size} photo{selectedPhotos.size !== 1 ? 's' : ''} selected
+                    </h3>
+                    <p className="text-sm text-indigo-700">
+                      Ready to create product with selected photos
+                    </p>
+                  </div>
+                  <div className="flex space-x-3">
+                    <button
+                      onClick={() => setSelectedPhotos(new Set())}
+                      className="px-3 py-2 text-sm font-medium text-indigo-700 bg-white border border-indigo-300 rounded-md hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+                    >
+                      Clear Selection
+                    </button>
+                    <button
+                      onClick={() => setCurrentView('create-product')}
+                      className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+                    >
+                      Create Product
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         );
       
@@ -60,6 +90,7 @@ export function SellerDashboard() {
             <ProductCreationWorkflow
               onProductCreated={handleProductCreated}
               onCancel={() => setCurrentView('overview')}
+              preSelectedPhotos={selectedPhotos}
             />
           </div>
         );

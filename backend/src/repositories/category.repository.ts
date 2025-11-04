@@ -43,4 +43,17 @@ export class CategoryRepository extends BaseRepository implements ICategoryRepos
     `
     return this.queryOne<Category>(query, [name])
   }
+
+  async create(data: { name: string; nameEn?: string; namePt?: string }): Promise<Category> {
+    const query = `
+      INSERT INTO categories (name, name_en, name_pt)
+      VALUES ($1, $2, $3)
+      RETURNING id, name, name_en, name_pt, created_at
+    `
+    
+    const nameEn = data.nameEn || data.name
+    const namePt = data.namePt || data.name
+    
+    return this.queryOne<Category>(query, [data.name, nameEn, namePt]) as Promise<Category>
+  }
 }
