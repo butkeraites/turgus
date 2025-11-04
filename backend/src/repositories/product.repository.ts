@@ -310,6 +310,8 @@ export class ProductRepository extends BaseRepository implements IProductReposit
   }
 
   async findWithFilters(filters: ProductFilters, buyerId?: string): Promise<PaginatedResult<ProductWithPhotos>> {
+    console.log('findWithFilters called with:', { filters, buyerId });
+    
     // Build WHERE conditions
     const conditions: string[] = []
     const params: any[] = []
@@ -355,12 +357,13 @@ export class ProductRepository extends BaseRepository implements IProductReposit
     
     // Search filter
     if (filters.search) {
-
+      conditions.push(`(p.title ILIKE $${paramIndex++} OR p.description ILIKE $${paramIndex++})`)
       params.push(`%${filters.search}%`, `%${filters.search}%`)
     }
     
     // Viewed filter (only if buyerId is provided) - reuse the same parameter as the JOIN
     if (buyerId && filters.viewed !== undefined) {
+      console.log('Applying viewed filter:', { viewed: filters.viewed, buyerId, buyerParamIndex });
       if (filters.viewed) {
         conditions.push(`EXISTS (SELECT 1 FROM product_views pv2 WHERE pv2.product_id = p.id AND pv2.buyer_id = $${buyerParamIndex})`)
       } else {
