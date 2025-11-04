@@ -11,7 +11,7 @@ import {
   recordProductView,
   batchPublishProducts
 } from '../controllers/product.controller'
-import { authenticateToken, requireSeller } from '../utils/auth'
+import { authenticateToken, requireSeller, optionalAuth } from '../utils/auth'
 
 const router = Router()
 
@@ -19,9 +19,9 @@ const router = Router()
 router.get('/seller', authenticateToken, requireSeller, getSellerProducts) // Get seller's products
 router.post('/batch/publish', authenticateToken, requireSeller, batchPublishProducts) // Batch publish products
 
-// Public routes (no authentication required)
-router.get('/', getProducts) // Get products with filtering and pagination
-router.get('/:id', getProduct) // Get single product by ID
+// Public routes (optional authentication for enhanced features)
+router.get('/', optionalAuth, getProducts) // Get products with filtering and pagination
+router.get('/:id', optionalAuth, getProduct) // Get single product by ID
 
 // Buyer routes (authentication required)
 router.post('/:id/view', authenticateToken, recordProductView) // Record product view

@@ -40,7 +40,7 @@ class ProductService {
     return response.data.data;
   }
 
-  async getProducts(filters?: ProductFilters): Promise<PaginatedProducts> {
+  async getProducts(filters?: ProductFilters, bustCache = false): Promise<PaginatedProducts> {
     const params = new URLSearchParams();
     
     if (filters) {
@@ -53,6 +53,11 @@ class ProductService {
           }
         }
       });
+    }
+
+    // Add cache-busting parameter if requested
+    if (bustCache) {
+      params.append('_t', Date.now().toString());
     }
 
     const response = await axios.get(`${API_BASE_URL}/products?${params.toString()}`);

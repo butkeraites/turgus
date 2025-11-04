@@ -17,6 +17,16 @@ export function ProductCard({ product, onClick }: ProductCardProps) {
   const primaryPhoto = product.photos?.[0];
   const isAvailable = product.status === 'available';
   const isViewed = product.isViewed || product.is_viewed;
+  
+  // Debug logging - remove after testing
+  if (product.id === '0db643c5-cbb7-44ce-a502-51fb192afa7e') {
+    console.log('ProductCard debug:', {
+      productId: product.id,
+      isViewed: product.isViewed,
+      is_viewed: product.is_viewed,
+      finalIsViewed: isViewed
+    });
+  }
 
   const handleClick = () => {
     buttonPress(); // Haptic feedback on tap

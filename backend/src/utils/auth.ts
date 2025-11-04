@@ -80,6 +80,31 @@ export const authenticateToken = (req: AuthenticatedRequest, res: Response, next
 }
 
 /**
+ * Optional authentication middleware - sets user if token is valid, but doesn't fail if no token
+ */
+export const optionalAuth = (req: AuthenticatedRequest, _res: Response, next: NextFunction): void => {
+  const authHeader = req.headers.authorization
+  const token = authHeader && authHeader.split(' ')[1] // Bearer TOKEN
+
+  if (!token) {
+    // No token provided, continue without user
+    req.user = undefined
+    next()
+    return
+  }
+
+  try {
+    const decoded = verifyToken(token)
+    req.user = decoded
+    next()
+  } catch (error) {
+    // Invalid token, continue without user (don't fail the request)
+    req.user = undefined
+    next()
+  }
+}
+
+/**
  * Middleware to check if user is a seller
  */
 export const requireSeller = (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {

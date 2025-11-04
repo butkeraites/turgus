@@ -310,6 +310,9 @@ export class ProductRepository extends BaseRepository implements IProductReposit
   }
 
   async findWithFilters(filters: ProductFilters, buyerId?: string): Promise<PaginatedResult<ProductWithPhotos>> {
+    // Debug logging - remove after testing
+    console.log('findWithFilters called with:', { filters, buyerId });
+    
     // Build WHERE conditions
     const conditions: string[] = []
     const params: any[] = []
@@ -360,6 +363,14 @@ export class ProductRepository extends BaseRepository implements IProductReposit
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''
     const orderClause = this.buildOrderClause(filters.sort_by, filters.sort_order)
     
+    // Add buyerId parameter for product_views join if needed
+    let buyerParamIndex = null;
+    if (buyerId) {
+      buyerParamIndex = paramIndex++;
+      params.push(buyerId);
+      console.log('Added buyerId to params:', { buyerId, buyerParamIndex, paramsLength: params.length });
+    }
+
     const baseQuery = `
       SELECT 
         p.*,
@@ -395,21 +406,17 @@ export class ProductRepository extends BaseRepository implements IProductReposit
       LEFT JOIN product_photos pp ON p.id = pp.product_id
       LEFT JOIN product_categories pc ON p.id = pc.product_id
       LEFT JOIN categories c ON pc.category_id = c.id
-      ${buyerId ? 'LEFT JOIN product_views pv ON p.id = pv.product_id AND pv.buyer_id = $' + (paramIndex++) : ''}
+      ${buyerId ? `LEFT JOIN product_views pv ON p.id = pv.product_id AND pv.buyer_id = $${buyerParamIndex}` : ''}
       ${whereClause}
       GROUP BY p.id${buyerId ? ', pv.id' : ''}
       ${orderClause}
     `
     
-    if (buyerId && !conditions.some(c => c.includes('pv.buyer_id'))) {
-      params.push(buyerId)
-    }
-    
     const countQuery = `
       SELECT COUNT(DISTINCT p.id) 
       FROM products p
       LEFT JOIN product_categories pc ON p.id = pc.product_id
-      ${buyerId ? 'LEFT JOIN product_views pv ON p.id = pv.product_id AND pv.buyer_id = $' + params.length : ''}
+      ${buyerId ? `LEFT JOIN product_views pv ON p.id = pv.product_id AND pv.buyer_id = $${buyerParamIndex}` : ''}
       ${whereClause}
     `
     
@@ -419,7 +426,17 @@ export class ProductRepository extends BaseRepository implements IProductReposit
       offset: (filters.page - 1) * filters.limit
     }
     
+    console.log('Executing query with params:', { params, baseQuery: baseQuery.substring(0, 200) + '...' });
+    
     const result = await this.createPaginatedResult<any>(baseQuery, countQuery, params, pagination)
+    
+    console.log('Query result sample:', result.data.length > 0 ? {
+      sampleProduct: {
+        id: result.data[0].id,
+        title: result.data[0].title,
+        is_viewed: result.data[0].is_viewed
+      }
+    } : 'No products returned');
     
     // Transform the result to match ProductWithPhotos interface
     const transformedData = result.data.map(row => ({

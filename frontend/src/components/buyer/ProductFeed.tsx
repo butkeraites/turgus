@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useLocation } from 'react-router-dom';
 import { ProductWithDetails, ProductFilters } from '../../types/product';
 import { productService } from '../../services/product.service';
 import { ProductCard } from './ProductCard';
@@ -14,6 +15,7 @@ interface ProductFeedProps {
 
 export function ProductFeed({ filters }: ProductFeedProps) {
   const { t } = useTranslation('buyer');
+  const location = useLocation();
   const [products, setProducts] = useState<ProductWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -21,7 +23,7 @@ export function ProductFeed({ filters }: ProductFeedProps) {
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
 
-  const loadProducts = useCallback(async (pageNum: number, reset = false) => {
+  const loadProducts = useCallback(async (pageNum: number, reset = false, bustCache = false) => {
     try {
       if (pageNum === 1) {
         setLoading(true);
@@ -37,7 +39,7 @@ export function ProductFeed({ filters }: ProductFeedProps) {
         limit: 20,
         // If no status filter is set, show all published products
         status: filters.status || ['available', 'reserved', 'sold']
-      });
+      }, bustCache);
 
       if (reset || pageNum === 1) {
         setProducts(response.data);
@@ -58,7 +60,7 @@ export function ProductFeed({ filters }: ProductFeedProps) {
 
   // Pull to refresh handler
   const handleRefresh = useCallback(async () => {
-    await loadProducts(1, true);
+    await loadProducts(1, true, true); // Bust cache on manual refresh
   }, [loadProducts]);
 
   // Pull to refresh hook
@@ -73,17 +75,40 @@ export function ProductFeed({ filters }: ProductFeedProps) {
     loadProducts(1, true);
   }, [loadProducts]);
 
+  // Refresh products when navigating back to this page (to update view status)
+  useEffect(() => {
+    // Only refresh if we're on the buyer dashboard/feed page
+    if (location.pathname === '/buyer') {
+      // Add a small delay to ensure the navigation is complete
+      const timeoutId = setTimeout(() => {
+        loadProducts(1, true, true); // Bust cache when navigating back
+      }, 100);
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [location.pathname, loadProducts]);
+
   // Refresh products when component becomes visible (to update view status)
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (!document.hidden) {
         // Page became visible, refresh the first page to update view status
-        loadProducts(1, true);
+        loadProducts(1, true, true); // Bust cache when page becomes visible
       }
     };
 
+    const handleFocus = () => {
+      // Window regained focus, refresh products to update view status
+      loadProducts(1, true, true); // Bust cache when window gains focus
+    };
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
   }, [loadProducts]);
 
   // Infinite scroll handler
