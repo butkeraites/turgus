@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { mediaController } from '../controllers/media.controller'
 import { uploadMultiple, handleUploadError } from '../middleware/upload'
-import { authenticateToken, requireSeller } from '../middleware/auth'
+import { authenticateToken, requireSeller } from '../utils/auth'
 
 const router = Router()
 

@@ -12,10 +12,17 @@ class MediaService {
         formData.append('photos', file);
       });
 
+      const token = localStorage.getItem('auth_token');
+      const headers: any = {
+        'Content-Type': 'multipart/form-data',
+      };
+      
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+
       const response = await axios.post(`${API_BASE_URL}/media/upload`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+        headers,
         onUploadProgress: (progressEvent) => {
           if (onProgress && progressEvent.total) {
             const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
@@ -50,13 +57,23 @@ class MediaService {
   }
 
   async getUnassignedPhotos(): Promise<UploadedPhoto[]> {
-    const response = await axios.get(`${API_BASE_URL}/media/unassigned`);
+    const token = localStorage.getItem('auth_token');
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    
+    const response = await axios.get(`${API_BASE_URL}/media/unassigned`, {
+      headers
+    });
 
     return response.data.photos || [];
   }
 
   async deletePhoto(photoId: string): Promise<void> {
-    await axios.delete(`${API_BASE_URL}/media/${photoId}`);
+    const token = localStorage.getItem('auth_token');
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    
+    await axios.delete(`${API_BASE_URL}/media/${photoId}`, {
+      headers
+    });
   }
 
   getPhotoUrl(photoId: string, size: 'thumb' | 'small' | 'medium' | 'large' = 'medium'): string {

@@ -1,0 +1,51 @@
+const jwt = require('jsonwebtoken');
+const axios = require('axios');
+require('dotenv').config();
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+
+async function testMedia() {
+  try {
+    console.log('🧪 Testing media endpoints...\n');
+    
+    // Generate a test token for a seller using the real seller ID
+    const testPayload = {
+      userId: '0e084d30-963a-49c9-bba7-aa75e73d3a88', // Real seller ID from database
+      userType: 'seller',
+      username: 'testseller'
+    };
+    
+    const token = jwt.sign(testPayload, JWT_SECRET, { expiresIn: '1h' });
+    console.log('🔑 Generated test token with real seller ID');
+    
+    // Test unassigned photos endpoint
+    try {
+      const response = await axios.get('http://localhost:3001/api/media/unassigned', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      console.log('📸 Unassigned photos response:');
+      console.log(JSON.stringify(response.data, null, 2));
+      
+    } catch (error) {
+      if (error.response) {
+        console.log('❌ Unassigned photos error:', error.response.status, error.response.data);
+      } else {
+        console.log('❌ Network error:', error.message);
+      }
+    }
+    
+  } catch (error) {
+    console.error('❌ Test error:', error);
+  }
+}
+
+// Run if called directly
+if (require.main === module) {
+  testMedia();
+}
+
+module.exports = { testMedia };

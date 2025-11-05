@@ -35,7 +35,7 @@ export class ProductRepository extends BaseRepository implements IProductReposit
       
       // Add categories
       if (data.category_ids && data.category_ids.length > 0) {
-        const values = data.category_ids.map((_, index) => `($1, $${index + 2})`).join(', ')
+        const values = data.category_ids.map((_, index) => `($1, ${index + 2})`).join(', ')
         const categoryQuery = `
           INSERT INTO product_categories (product_id, category_id)
           VALUES ${values}
@@ -62,143 +62,141 @@ export class ProductRepository extends BaseRepository implements IProductReposit
     return this.findRecordById<Product>('products', id)
   }
 
-  async findByIdWithDetails(id: string, buyerId?: string): Promise<ProductWithDetails | null> {
-    const query = `
-      SELECT 
-        p.*,
-        sa.id as seller_id,
-        sa.username as seller_username,
-        COALESCE(
-          json_agg(
-            DISTINCT jsonb_build_object(
-              'id', pp.id,
-              'product_id', pp.product_id,
-              'filename', pp.filename,
-              'original_name', pp.original_name,
-              'mime_type', pp.mime_type,
-              'size', pp.size,
-              'sort_order', pp.sort_order,
-              'created_at', pp.created_at
-            )
-          ) FILTER (WHERE pp.id IS NOT NULL), 
-          '[]'
-        ) as photos,
-        COALESCE(
-          json_agg(
-            DISTINCT jsonb_build_object(
-              'id', c.id,
-              'name', c.name,
-              'name_en', c.name_en,
-              'name_pt', c.name_pt,
-              'created_at', c.created_at
-            )
-          ) FILTER (WHERE c.id IS NOT NULL), 
-          '[]'
-        ) as categories
-        ${buyerId ? ', CASE WHEN pv.id IS NOT NULL THEN true ELSE false END as is_viewed' : ''}
-      FROM products p
-      JOIN seller_accounts sa ON p.seller_id = sa.id
-      LEFT JOIN product_photos pp ON p.id = pp.product_id
-      LEFT JOIN product_categories pc ON p.id = pc.product_id
-      LEFT JOIN categories c ON pc.category_id = c.id
-      ${buyerId ? 'LEFT JOIN product_views pv ON p.id = pv.product_id AND pv.buyer_id = $2' : ''}
-      WHERE p.id = $1
-      GROUP BY p.id, sa.id, sa.username${buyerId ? ', pv.id' : ''}
-    `
-    
-    const params = buyerId ? [id, buyerId] : [id]
-    const result = await this.queryOne<any>(query, params)
-    
-    if (!result) return null
-    
-    return {
-      id: result.id,
-      seller_id: result.seller_id,
-      title: result.title,
-      description: result.description,
-      price: parseFloat(result.price),
-      status: result.status,
-      created_at: result.created_at,
-      updated_at: result.updated_at,
-      published_at: result.published_at,
-      photos: result.photos || [],
-      categories: result.categories || [],
-      seller: {
-        id: result.seller_id,
-        username: result.seller_username
-      },
-      ...(buyerId && { is_viewed: result.is_viewed })
-    }
+async findByIdWithDetails(id: string, buyerId?: string): Promise<ProductWithDetails | null> {
+  const params: any[] = [id]
+  let buyerIdx: number | null = null
+  if (buyerId) {
+    params.push(buyerId)
+    buyerIdx = params.length // 2
   }
 
-  async update(id: string, data: UpdateProduct): Promise<Product | null> {
-    return this.transaction(async (client) => {
-      // Build dynamic update query
-      const updateFields: string[] = []
-      const params: any[] = []
-      let paramIndex = 1
-      
-      if (data.title !== undefined) {
-        updateFields.push(`title = $${paramIndex++}`)
-        params.push(data.title)
-      }
-      
-      if (data.description !== undefined) {
-        updateFields.push(`description = $${paramIndex++}`)
-        params.push(data.description)
-      }
-      
-      if (data.price !== undefined) {
-        updateFields.push(`price = $${paramIndex++}`)
-        params.push(data.price)
-      }
-      
-      if (updateFields.length === 0) {
-        // No fields to update, just return current product
-        return this.findById(id)
-      }
-      
-      updateFields.push(`updated_at = CURRENT_TIMESTAMP`)
-      params.push(id) // Add ID as last parameter
-      
-      const query = `
-        UPDATE products 
-        SET ${updateFields.join(', ')}
-        WHERE id = $${paramIndex}
-        RETURNING *
-      `
-      
-      const result = await client.query(query, params)
-      const product = result.rows[0] || null
-      
-      // Update categories if provided
-      if (data.category_ids !== undefined && product) {
-        await this.removeCategories(id)
-        if (data.category_ids.length > 0) {
-          await this.addCategories(id, data.category_ids)
-        }
-      }
-      
-      // Update photos if provided
-      if (data.photo_ids !== undefined && product) {
-        // First, unassign current photos
-        const unassignQuery = `UPDATE product_photos SET product_id = NULL WHERE product_id = $1`
-        await client.query(unassignQuery, [id])
-        
-        // Then assign new photos
-        if (data.photo_ids.length > 0) {
-          const assignQuery = `
-            UPDATE product_photos 
-            SET product_id = $1 
-            WHERE id = ANY($2) AND product_id IS NULL
-          `
-          await client.query(assignQuery, [id, data.photo_ids])
-        }
-      }
-      
-      return product
-    })
+  const isViewedSelect = buyerIdx
+    ? `, EXISTS(
+         SELECT 1 FROM product_views pv_check
+         WHERE pv_check.product_id = p.id
+           AND pv_check.viewer_id = $${buyerIdx}::uuid
+       ) AS is_viewed`
+    : ''
+
+  const query = `
+    SELECT 
+      p.*,
+      sa.id AS seller_id,
+      sa.username AS seller_username,
+      COALESCE(
+        json_agg(
+          DISTINCT jsonb_build_object(
+            'id', pp.id,
+            'product_id', pp.product_id,
+            'filename', pp.filename,
+            'original_name', pp.original_name,
+            'mime_type', pp.mime_type,
+            'size', pp.size,
+            'sort_order', pp.sort_order,
+            'created_at', pp.created_at
+          )
+        ) FILTER (WHERE pp.id IS NOT NULL),
+        '[]'
+      ) AS photos,
+      COALESCE(
+        json_agg(
+          DISTINCT jsonb_build_object(
+            'id', c.id,
+            'name', c.name,
+            'name_en', c.name_en,
+            'name_pt', c.name_pt,
+            'created_at', c.created_at
+          )
+        ) FILTER (WHERE c.id IS NOT NULL),
+        '[]'
+      ) AS categories
+      ${isViewedSelect}
+    FROM products p
+    JOIN seller_accounts sa ON p.seller_id = sa.id
+    LEFT JOIN product_photos pp ON p.id = pp.product_id
+    LEFT JOIN product_categories pc ON p.id = pc.product_id
+    LEFT JOIN categories c ON pc.category_id = c.id
+    WHERE p.id = $1
+    GROUP BY p.id, sa.id, sa.username
+  `
+
+  const result = await this.queryOne<any>(query, params)
+  if (!result) return null
+
+  return {
+    id: result.id,
+    seller_id: result.seller_id,
+    title: result.title,
+    description: result.description,
+    price: parseFloat(result.price),
+    status: result.status,
+    created_at: result.created_at,
+    updated_at: result.updated_at,
+    published_at: result.published_at,
+    photos: result.photos || [],
+    categories: result.categories || [],
+    seller: { id: result.seller_id, username: result.seller_username },
+    ...(buyerId ? { is_viewed: result.is_viewed } : {})
   }
+}
+
+
+async update(id: string, data: UpdateProduct): Promise<Product | null> {
+  return this.transaction(async (client) => {
+    const updateFields: string[] = []
+    const params: any[] = []
+    let i = 1
+
+    if (data.title !== undefined) {
+      updateFields.push(`title = $${i++}`)
+      params.push(data.title)
+    }
+    if (data.description !== undefined) {
+      updateFields.push(`description = $${i++}`)
+      params.push(data.description)
+    }
+    if (data.price !== undefined) {
+      updateFields.push(`price = $${i++}`)
+      params.push(data.price)
+    }
+
+    if (updateFields.length === 0) return this.findById(id)
+
+    updateFields.push(`updated_at = CURRENT_TIMESTAMP`)
+
+    const whereIdx = i
+    params.push(id)
+
+    const query = `
+      UPDATE products
+      SET ${updateFields.join(', ')}
+      WHERE id = $${whereIdx}
+      RETURNING *
+    `
+    const result = await client.query(query, params)
+    const product = (result.rows[0] || null) as Product | null
+
+    if (data.category_ids !== undefined && product) {
+      await this.removeCategories(id)
+      if (data.category_ids.length > 0) {
+        await this.addCategories(id, data.category_ids)
+      }
+    }
+
+    if (data.photo_ids !== undefined && product) {
+      await client.query(`UPDATE product_photos SET product_id = NULL WHERE product_id = $1`, [id])
+      if (data.photo_ids.length > 0) {
+        await client.query(
+          `UPDATE product_photos SET product_id = $1 WHERE id = ANY($2::uuid[]) AND product_id IS NULL`,
+          [id, data.photo_ids]
+        )
+      }
+    }
+
+    return product
+  })
+}
+
 
   async delete(id: string): Promise<boolean> {
     return this.transaction(async (client) => {
@@ -319,10 +317,11 @@ export class ProductRepository extends BaseRepository implements IProductReposit
     
     // Add buyerId parameter for product_views join if needed
     let buyerParamIndex = null;
-    if (buyerId) {
-      buyerParamIndex = paramIndex++;
-      params.push(buyerId);
-    }
+    // Temporarily disabled to debug
+    // if (buyerId) {
+    //   buyerParamIndex = paramIndex++;
+    //   params.push(buyerId);
+    // }
 
     // For buyers, always exclude draft products
     if (buyerId) {
@@ -333,43 +332,49 @@ export class ProductRepository extends BaseRepository implements IProductReposit
     if (filters.category_ids && filters.category_ids.length > 0) {
       conditions.push(`EXISTS (
         SELECT 1 FROM product_categories pc 
-        WHERE pc.product_id = p.id AND pc.category_id = ANY($${paramIndex++})
+        WHERE pc.product_id = p.id AND pc.category_id = ANY($${paramIndex})
       )`)
       params.push(filters.category_ids)
+      paramIndex++
     }
     
     // Status filter
     if (filters.status && filters.status.length > 0) {
-      conditions.push(`p.status = ANY($${paramIndex++})`)
+      conditions.push(`p.status = ANY($${paramIndex}::product_status[])`)
       params.push(filters.status)
+      paramIndex++
     }
     
     // Price filters
     if (filters.min_price !== undefined) {
-      conditions.push(`p.price >= $${paramIndex++}`)
+      conditions.push(`p.price >= $${paramIndex}`)
       params.push(filters.min_price)
+      paramIndex++
     }
     
     if (filters.max_price !== undefined) {
-      conditions.push(`p.price <= $${paramIndex++}`)
+      conditions.push(`p.price <= $${paramIndex}`)
       params.push(filters.max_price)
+      paramIndex++
     }
     
     // Search filter
     if (filters.search) {
-      conditions.push(`(p.title ILIKE $${paramIndex++} OR p.description ILIKE $${paramIndex++})`)
+      conditions.push(`(p.title ILIKE $${paramIndex} OR p.description ILIKE $${paramIndex + 1})`)
       params.push(`%${filters.search}%`, `%${filters.search}%`)
+      paramIndex += 2
     }
     
     // Viewed filter (only if buyerId is provided) - reuse the same parameter as the JOIN
-    if (buyerId && filters.viewed !== undefined) {
-      console.log('Applying viewed filter:', { viewed: filters.viewed, buyerId, buyerParamIndex });
-      if (filters.viewed) {
-        conditions.push(`EXISTS (SELECT 1 FROM product_views pv2 WHERE pv2.product_id = p.id AND pv2.buyer_id = $${buyerParamIndex})`)
-      } else {
-        conditions.push(`NOT EXISTS (SELECT 1 FROM product_views pv2 WHERE pv2.product_id = p.id AND pv2.buyer_id = $${buyerParamIndex})`)
-      }
-    }
+    // Temporarily disabled to debug
+    // if (buyerId && filters.viewed !== undefined) {
+    //   console.log('Applying viewed filter:', { viewed: filters.viewed, buyerId, buyerParamIndex });
+    //   if (filters.viewed) {
+    //     conditions.push(`EXISTS (SELECT 1 FROM product_views pv2 WHERE pv2.product_id = p.id AND pv2.viewer_id = $${buyerParamIndex}::uuid)`)
+    //   } else {
+    //     conditions.push(`NOT EXISTS (SELECT 1 FROM product_views pv2 WHERE pv2.product_id = p.id AND pv2.viewer_id = $${buyerParamIndex}::uuid)`)
+    //   }
+    // }
     
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''
     const orderClause = this.buildOrderClause(filters.sort_by, filters.sort_order)
@@ -405,14 +410,13 @@ export class ProductRepository extends BaseRepository implements IProductReposit
           ) FILTER (WHERE c.id IS NOT NULL), 
           '[]'
         ) as categories
-        ${buyerId ? ', CASE WHEN pv.id IS NOT NULL THEN true ELSE false END as is_viewed' : ''}
+
       FROM products p
       LEFT JOIN product_photos pp ON p.id = pp.product_id
       LEFT JOIN product_categories pc ON p.id = pc.product_id
       LEFT JOIN categories c ON pc.category_id = c.id
-      ${buyerId ? `LEFT JOIN product_views pv ON p.id = pv.product_id AND pv.buyer_id = $${buyerParamIndex}` : ''}
       ${whereClause}
-      GROUP BY p.id${buyerId ? ', pv.id' : ''}
+      GROUP BY p.id
       ${orderClause}
     `
     
@@ -420,7 +424,6 @@ export class ProductRepository extends BaseRepository implements IProductReposit
       SELECT COUNT(DISTINCT p.id) 
       FROM products p
       LEFT JOIN product_categories pc ON p.id = pc.product_id
-      ${buyerId ? `LEFT JOIN product_views pv ON p.id = pv.product_id AND pv.buyer_id = $${buyerParamIndex}` : ''}
       ${whereClause}
     `
     
@@ -429,6 +432,14 @@ export class ProductRepository extends BaseRepository implements IProductReposit
       limit: filters.limit,
       offset: (filters.page - 1) * filters.limit
     }
+    
+    console.log('=== SQL DEBUG ===')
+    console.log('baseQuery:', baseQuery)
+    console.log('countQuery:', countQuery)
+    console.log('params:', params)
+    console.log('buyerId:', buyerId)
+    console.log('buyerParamIndex:', buyerParamIndex)
+    console.log('================')
     
     const result = await this.createPaginatedResult<any>(baseQuery, countQuery, params, pagination)
     
@@ -454,22 +465,20 @@ export class ProductRepository extends BaseRepository implements IProductReposit
     }
   }
 
-  async addCategories(productId: string, categoryIds: string[]): Promise<void> {
-    if (categoryIds.length === 0) return
-    
-    const values = categoryIds.map((_, index) => `($1, $${index + 2})`).join(', ')
-    const query = `
-      INSERT INTO product_categories (product_id, category_id)
-      VALUES ${values}
-      ON CONFLICT (product_id, category_id) DO NOTHING
-    `
-    
-    await this.query(query, [productId, ...categoryIds])
-  }
+async addCategories(productId: string, categoryIds: string[]): Promise<void> {
+  if (!categoryIds.length) return
+  await this.query(
+    `INSERT INTO product_categories (product_id, category_id)
+     SELECT $1, UNNEST($2::uuid[])
+     ON CONFLICT (product_id, category_id) DO NOTHING`,
+    [productId, categoryIds]
+  )
+}
+
 
   async removeCategories(productId: string, categoryIds?: string[]): Promise<void> {
     if (categoryIds && categoryIds.length > 0) {
-      const query = `DELETE FROM product_categories WHERE product_id = $1 AND category_id = ANY($2)`
+      const query = `DELETE FROM product_categories WHERE product_id = $1 AND category_id = ANY($2::uuid[])`
       await this.query(query, [productId, categoryIds])
     } else {
       const query = `DELETE FROM product_categories WHERE product_id = $1`
@@ -489,12 +498,11 @@ export class ProductRepository extends BaseRepository implements IProductReposit
   }
 
   async recordView(productId: string, buyerId: string): Promise<void> {
-    const query = `
-      INSERT INTO product_views (product_id, buyer_id, viewed_at)
-      VALUES ($1, $2, CURRENT_TIMESTAMP)
-      ON CONFLICT (product_id, buyer_id) 
-      DO UPDATE SET viewed_at = CURRENT_TIMESTAMP
-    `
-    await this.query(query, [productId, buyerId])
+    await this.query(
+      `INSERT INTO product_views (product_id, viewer_id, viewed_at)
+       VALUES ($1, $2, CURRENT_TIMESTAMP)
+       ON CONFLICT DO NOTHING`,
+      [productId, buyerId]
+    )
   }
 }
