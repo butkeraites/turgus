@@ -315,13 +315,7 @@ async update(id: string, data: UpdateProduct): Promise<Product | null> {
     const params: any[] = []
     let paramIndex = 1
     
-    // Add buyerId parameter for product_views join if needed
-    let buyerParamIndex = null;
-    // Temporarily disabled to debug
-    // if (buyerId) {
-    //   buyerParamIndex = paramIndex++;
-    //   params.push(buyerId);
-    // }
+    // No longer using buyerId parameter for views
 
     // For buyers, always exclude draft products
     if (buyerId) {
@@ -365,16 +359,6 @@ async update(id: string, data: UpdateProduct): Promise<Product | null> {
       paramIndex += 2
     }
     
-    // Viewed filter (only if buyerId is provided) - reuse the same parameter as the JOIN
-    // Temporarily disabled to debug
-    // if (buyerId && filters.viewed !== undefined) {
-    //   console.log('Applying viewed filter:', { viewed: filters.viewed, buyerId, buyerParamIndex });
-    //   if (filters.viewed) {
-    //     conditions.push(`EXISTS (SELECT 1 FROM product_views pv2 WHERE pv2.product_id = p.id AND pv2.viewer_id = $${buyerParamIndex}::uuid)`)
-    //   } else {
-    //     conditions.push(`NOT EXISTS (SELECT 1 FROM product_views pv2 WHERE pv2.product_id = p.id AND pv2.viewer_id = $${buyerParamIndex}::uuid)`)
-    //   }
-    // }
     
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''
     const orderClause = this.buildOrderClause(filters.sort_by, filters.sort_order)
@@ -433,14 +417,7 @@ async update(id: string, data: UpdateProduct): Promise<Product | null> {
       offset: (filters.page - 1) * filters.limit
     }
     
-    console.log('=== SQL DEBUG ===')
-    console.log('baseQuery:', baseQuery)
-    console.log('countQuery:', countQuery)
-    console.log('params:', params)
-    console.log('buyerId:', buyerId)
-    console.log('buyerParamIndex:', buyerParamIndex)
-    console.log('================')
-    
+
     const result = await this.createPaginatedResult<any>(baseQuery, countQuery, params, pagination)
     
     // Transform the result to match ProductWithPhotos interface
@@ -456,7 +433,7 @@ async update(id: string, data: UpdateProduct): Promise<Product | null> {
       published_at: row.published_at,
       photos: row.photos || [],
       categories: row.categories || [],
-      ...(buyerId && { is_viewed: row.is_viewed })
+
     }))
     
     return {
@@ -498,11 +475,7 @@ async addCategories(productId: string, categoryIds: string[]): Promise<void> {
   }
 
   async recordView(productId: string, buyerId: string): Promise<void> {
-    await this.query(
-      `INSERT INTO product_views (product_id, viewer_id, viewed_at)
-       VALUES ($1, $2, CURRENT_TIMESTAMP)
-       ON CONFLICT DO NOTHING`,
-      [productId, buyerId]
-    )
+    // View tracking disabled - method does nothing
+    return Promise.resolve()
   }
 }

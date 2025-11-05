@@ -104,9 +104,15 @@ export const buyerRegister = async (req: Request, res: Response): Promise<void> 
  */
 export const buyerLogin = async (req: Request, res: Response): Promise<void> => {
   try {
+    console.log('=== BUYER LOGIN DEBUG ===')
+    console.log('Request body:', req.body)
+    console.log('Content-Type:', req.headers['content-type'])
+    console.log('========================')
+    
     const { telephone, password } = req.body
 
     if (!telephone || !password) {
+      console.log('Missing fields - telephone:', !!telephone, 'password:', !!password)
       res.status(400).json({
         error: 'Validation error',
         message: 'Telephone and password are required'

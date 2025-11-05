@@ -9,7 +9,14 @@ router.post('/seller/login', sellerLogin)
 
 // Buyer authentication
 router.post('/buyer/register', buyerRegister)
-router.post('/buyer/login', buyerLogin)
+router.post('/buyer/login', (req, res, next) => {
+  console.log('=== ROUTE DEBUG ===')
+  console.log('Route hit: /buyer/login')
+  console.log('Body:', req.body)
+  console.log('Headers:', req.headers)
+  console.log('==================')
+  next()
+}, buyerLogin)
 
 // Protected routes
 router.get('/me', authenticateToken, getCurrentUser)
