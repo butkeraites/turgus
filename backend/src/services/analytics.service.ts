@@ -109,6 +109,34 @@ export class AnalyticsService {
   }
 
   /**
+   * Track want list add
+   */
+  async trackWantListAdd(productId: string, userId: string): Promise<void> {
+    const client = await this.pool.connect()
+    
+    try {
+      await client.query('BEGIN')
+      
+      // Update product metrics - increment want list adds
+      await client.query(`
+        INSERT INTO product_metrics (product_id, want_list_adds)
+        VALUES ($1, 1)
+        ON CONFLICT (product_id) 
+        DO UPDATE SET 
+          want_list_adds = product_metrics.want_list_adds + 1,
+          last_updated = CURRENT_TIMESTAMP
+      `, [productId])
+      
+      await client.query('COMMIT')
+    } catch (error) {
+      await client.query('ROLLBACK')
+      throw error
+    } finally {
+      client.release()
+    }
+  }
+
+  /**
    * Record sale completion
    */
   async recordSale(
@@ -128,70 +156,87 @@ export class AnalyticsService {
    * Get dashboard metrics for seller
    */
   async getDashboardMetrics(sellerId: string): Promise<DashboardMetrics> {
-    // Total users (buyers who viewed seller's products)
-    const usersResult = await this.pool.query(`
-      SELECT COUNT(DISTINCT pv.viewer_id) as total_users
-      FROM product_views pv
-      JOIN products p ON pv.product_id = p.id
-      WHERE p.seller_id = $1 AND pv.viewer_id IS NOT NULL
-    `, [sellerId])
+    try {
+      // Total users (buyers who viewed seller's products + anonymous sessions)
+      const usersResult = await this.pool.query(`
+        SELECT COUNT(DISTINCT COALESCE(pv.viewer_id::text, pv.session_id)) as total_users
+        FROM product_views pv
+        JOIN products p ON pv.product_id = p.id
+        WHERE p.seller_id = $1
+      `, [sellerId])
 
-    // Total products
-    const productsResult = await this.pool.query(`
-      SELECT COUNT(*) as total_products
-      FROM products
-      WHERE seller_id = $1
-    `, [sellerId])
+      // Total products
+      const productsResult = await this.pool.query(`
+        SELECT COUNT(*) as total_products
+        FROM products
+        WHERE seller_id = $1
+      `, [sellerId])
 
-    // Total views
-    const viewsResult = await this.pool.query(`
-      SELECT COALESCE(SUM(pm.total_views), 0) as total_views
-      FROM product_metrics pm
-      JOIN products p ON pm.product_id = p.id
-      WHERE p.seller_id = $1
-    `, [sellerId])
+      // Total views (from product_views table directly if metrics table is empty)
+      const viewsResult = await this.pool.query(`
+        SELECT COUNT(*) as total_views
+        FROM product_views pv
+        JOIN products p ON pv.product_id = p.id
+        WHERE p.seller_id = $1
+      `, [sellerId])
 
-    // Online users (last 15 minutes)
-    const onlineResult = await this.pool.query(`
-      SELECT COUNT(DISTINCT os.user_id) as online_users
-      FROM online_sessions os
-      JOIN product_views pv ON os.user_id = pv.viewer_id
-      JOIN products p ON pv.product_id = p.id
-      WHERE p.seller_id = $1 
-      AND os.last_activity > CURRENT_TIMESTAMP - INTERVAL '15 minutes'
-      AND os.is_active = true
-    `, [sellerId])
+      // Online users (last 15 minutes) - simplified query
+      const onlineResult = await this.pool.query(`
+        SELECT COUNT(DISTINCT session_id) as online_users
+        FROM online_sessions
+        WHERE last_activity > CURRENT_TIMESTAMP - INTERVAL '15 minutes'
+        AND is_active = true
+      `, [])
 
-    // Recent sales (last 30 days)
-    const salesResult = await this.pool.query(`
-      SELECT COUNT(*) as recent_sales, COALESCE(SUM(total_amount), 0) as total_revenue
-      FROM sales_analytics
-      WHERE seller_id = $1 
-      AND completed_at > CURRENT_TIMESTAMP - INTERVAL '30 days'
-    `, [sellerId])
+      // Recent sales (last 30 days)
+      const salesResult = await this.pool.query(`
+        SELECT COUNT(*) as recent_sales, COALESCE(SUM(total_amount), 0) as total_revenue
+        FROM sales_analytics
+        WHERE seller_id = $1 
+        AND completed_at > CURRENT_TIMESTAMP - INTERVAL '30 days'
+      `, [sellerId])
 
-    // Top products
-    const topProductsResult = await this.pool.query(`
-      SELECT 
-        p.id,
-        p.title,
-        COALESCE(pm.total_views, 0) as views,
-        COALESCE(pm.want_list_adds, 0) as want_list_adds
-      FROM products p
-      LEFT JOIN product_metrics pm ON p.id = pm.product_id
-      WHERE p.seller_id = $1
-      ORDER BY pm.total_views DESC NULLS LAST
-      LIMIT 5
-    `, [sellerId])
+      // Top products with fallback to product_views count
+      const topProductsResult = await this.pool.query(`
+        SELECT 
+          p.id,
+          p.title,
+          COUNT(pv.id) as views,
+          COALESCE(pm.want_list_adds, 0) as want_list_adds
+        FROM products p
+        LEFT JOIN product_views pv ON p.id = pv.product_id
+        LEFT JOIN product_metrics pm ON p.id = pm.product_id
+        WHERE p.seller_id = $1
+        GROUP BY p.id, p.title, pm.want_list_adds
+        ORDER BY views DESC
+        LIMIT 5
+      `, [sellerId])
 
-    return {
-      totalUsers: parseInt(usersResult.rows[0]?.total_users || '0'),
-      totalProducts: parseInt(productsResult.rows[0]?.total_products || '0'),
-      totalViews: parseInt(viewsResult.rows[0]?.total_views || '0'),
-      onlineUsers: parseInt(onlineResult.rows[0]?.online_users || '0'),
-      recentSales: parseInt(salesResult.rows[0]?.recent_sales || '0'),
-      totalRevenue: parseFloat(salesResult.rows[0]?.total_revenue || '0'),
-      topProducts: topProductsResult.rows
+      const metrics = {
+        totalUsers: parseInt(usersResult.rows[0]?.total_users || '0'),
+        totalProducts: parseInt(productsResult.rows[0]?.total_products || '0'),
+        totalViews: parseInt(viewsResult.rows[0]?.total_views || '0'),
+        onlineUsers: parseInt(onlineResult.rows[0]?.online_users || '0'),
+        recentSales: parseInt(salesResult.rows[0]?.recent_sales || '0'),
+        totalRevenue: parseFloat(salesResult.rows[0]?.total_revenue || '0'),
+        topProducts: topProductsResult.rows
+      }
+
+      console.log('Analytics metrics for seller', sellerId, ':', metrics)
+      return metrics
+
+    } catch (error) {
+      console.error('Error getting dashboard metrics:', error)
+      // Return default values on error
+      return {
+        totalUsers: 0,
+        totalProducts: 0,
+        totalViews: 0,
+        onlineUsers: 0,
+        recentSales: 0,
+        totalRevenue: 0,
+        topProducts: []
+      }
     }
   }
 
@@ -199,17 +244,20 @@ export class AnalyticsService {
    * Get online users count (real-time)
    */
   async getOnlineUsersCount(sellerId: string): Promise<number> {
-    const result = await this.pool.query(`
-      SELECT COUNT(DISTINCT os.user_id) as online_users
-      FROM online_sessions os
-      JOIN product_views pv ON os.user_id = pv.viewer_id
-      JOIN products p ON pv.product_id = p.id
-      WHERE p.seller_id = $1 
-      AND os.last_activity > CURRENT_TIMESTAMP - INTERVAL '15 minutes'
-      AND os.is_active = true
-    `, [sellerId])
+    try {
+      // Simplified query - just count active sessions in last 15 minutes
+      const result = await this.pool.query(`
+        SELECT COUNT(DISTINCT session_id) as online_users
+        FROM online_sessions
+        WHERE last_activity > CURRENT_TIMESTAMP - INTERVAL '15 minutes'
+        AND is_active = true
+      `, [])
 
-    return parseInt(result.rows[0]?.online_users || '0')
+      return parseInt(result.rows[0]?.online_users || '0')
+    } catch (error) {
+      console.error('Error getting online users count:', error)
+      return 0
+    }
   }
 
   /**

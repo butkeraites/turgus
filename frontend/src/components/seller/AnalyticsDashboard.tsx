@@ -3,7 +3,7 @@ import {
   UsersIcon, 
   EyeIcon, 
   ShoppingBagIcon, 
-  CurrencyEuroIcon,
+  CurrencyDollarIcon,
   PlayIcon,
   PauseIcon,
   ChartBarIcon,
@@ -178,7 +178,7 @@ export function AnalyticsDashboard() {
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <CurrencyEuroIcon className="h-8 w-8 text-yellow-600" />
+              <CurrencyDollarIcon className="h-8 w-8 text-yellow-600" />
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Revenue (30 days)</p>

@@ -86,7 +86,8 @@ router.get('/', (_req, res) => {
         getOnlineUsersCount: 'GET /api/analytics/online-users',
         getSalesReport: 'GET /api/analytics/sales-report',
         trackProductView: 'POST /api/analytics/track/product/:productId',
-        updateOnlineSession: 'POST /api/analytics/track/session'
+        updateOnlineSession: 'POST /api/analytics/track/session',
+        trackWantListAdd: 'POST /api/analytics/track/want-list-add/:productId'
       }
     }
   })

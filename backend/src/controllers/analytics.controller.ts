@@ -180,3 +180,33 @@ export const updateOnlineSession = async (req: AuthenticatedRequest, res: Respon
     })
   }
 }
+
+/**
+ * Track want list add (called when someone adds a product to their want list)
+ */
+export const trackWantListAdd = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    const { productId } = req.params
+
+    if (!req.user) {
+      res.status(401).json({
+        error: 'Authentication required',
+        message: 'User must be logged in to track want list adds'
+      })
+      return
+    }
+
+    await analyticsService.trackWantListAdd(productId, req.user.userId)
+
+    res.json({
+      success: true,
+      message: 'Want list add tracked successfully'
+    })
+  } catch (error) {
+    console.error('Track want list add error:', error)
+    res.status(500).json({
+      error: 'Internal server error',
+      message: 'An error occurred while tracking want list add'
+    })
+  }
+}

@@ -2,6 +2,10 @@ import { Response } from 'express'
 import { AuthenticatedRequest } from '../utils/auth'
 import { repositories } from '../repositories'
 import { AddToWantListSchema, UUIDSchema } from '../schemas/validation'
+import { AnalyticsService } from '../services/analytics.service'
+import { pool } from '../config/database'
+
+const analyticsService = new AnalyticsService(pool)
 
 /**
  * Get buyer's want list
@@ -304,6 +308,9 @@ export const completeWantList = async (req: AuthenticatedRequest, res: Response)
       return
     }
 
+    // Get want list details before completing for analytics
+    const wantListDetails = await repositories.wantList.findById(wantListId)
+    
     // Complete the want list
     const completed = await repositories.wantList.complete(wantListId)
 
@@ -313,6 +320,22 @@ export const completeWantList = async (req: AuthenticatedRequest, res: Response)
         message: 'Failed to complete the want list'
       })
       return
+    }
+
+    // Record sale analytics if we have the want list details
+    if (wantListDetails) {
+      try {
+        await analyticsService.recordSale(
+          req.user.userId, // seller ID
+          wantListDetails.buyerId,
+          wantListId,
+          wantListDetails.totalPrice,
+          wantListDetails.itemCount
+        )
+      } catch (analyticsError) {
+        console.error('Failed to record sale analytics:', analyticsError)
+        // Don't fail the completion if analytics fails
+      }
     }
 
     res.json({

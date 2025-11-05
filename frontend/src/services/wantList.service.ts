@@ -34,6 +34,15 @@ class WantListService {
     await axios.post(`${API_BASE_URL}/want-lists/items`, data, {
       headers: this.getAuthHeaders(),
     });
+    
+    // Track want list add for analytics (silently fail if it doesn't work)
+    try {
+      await axios.post(`${API_BASE_URL}/analytics/track/want-list-add/${productId}`, {}, {
+        headers: this.getAuthHeaders(),
+      });
+    } catch (error) {
+      console.warn('Failed to track want list add:', error);
+    }
   }
 
   async removeFromWantList(itemId: string): Promise<void> {
