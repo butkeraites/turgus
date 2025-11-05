@@ -5,6 +5,7 @@ import productRoutes from './product.routes'
 import wantListRoutes from './wantList.routes'
 import categoryRoutes from './category.routes'
 import commentRoutes from './comment.routes'
+import analyticsRoutes from './analytics.routes'
 
 const router = Router()
 
@@ -25,6 +26,9 @@ router.use('/categories', categoryRoutes)
 
 // Mount comment routes
 router.use('/', commentRoutes)
+
+// Mount analytics routes  
+router.use('/analytics', analyticsRoutes)
 
 // API info endpoint
 router.get('/', (_req, res) => {
@@ -76,6 +80,13 @@ router.get('/', (_req, res) => {
         updateComment: 'PUT /api/comments/:commentId',
         deleteComment: 'DELETE /api/comments/:commentId',
         moderateComment: 'PATCH /api/comments/:commentId/moderate'
+      },
+      analytics: {
+        getDashboardMetrics: 'GET /api/analytics/dashboard',
+        getOnlineUsersCount: 'GET /api/analytics/online-users',
+        getSalesReport: 'GET /api/analytics/sales-report',
+        trackProductView: 'POST /api/analytics/track/product/:productId',
+        updateOnlineSession: 'POST /api/analytics/track/session'
       }
     }
   })

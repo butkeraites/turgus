@@ -4,9 +4,10 @@ import { PhotoManager } from '../seller/PhotoManager';
 import { ProductCreationWorkflow } from '../seller/ProductCreationWorkflow';
 import { ProductManagement } from '../seller/ProductManagement';
 import { OrderManagement } from '../seller/OrderManagement';
+import { AnalyticsDashboard } from '../seller/AnalyticsDashboard';
 import { ProductWithDetails } from '../../types/product';
 
-type DashboardView = 'overview' | 'photos' | 'products' | 'orders' | 'create-product';
+type DashboardView = 'overview' | 'photos' | 'products' | 'orders' | 'analytics' | 'create-product';
 
 export function SellerDashboard() {
   const { user } = useAuth();
@@ -121,6 +122,25 @@ export function SellerDashboard() {
           </div>
         );
       
+      case 'analytics':
+        return (
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-gray-900">Analytics Dashboard</h2>
+              <button
+                onClick={() => setCurrentView('overview')}
+                className="text-sm text-gray-600 hover:text-gray-800 flex items-center"
+              >
+                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Back to Dashboard
+              </button>
+            </div>
+            <AnalyticsDashboard />
+          </div>
+        );
+      
       default:
         return (
           <div className="bg-white rounded-lg shadow p-6">
@@ -159,7 +179,7 @@ export function SellerDashboard() {
             </div>
 
             {/* Main Sections */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <button
                 onClick={() => setCurrentView('photos')}
                 className="bg-indigo-50 hover:bg-indigo-100 p-6 rounded-lg text-left transition-colors"
@@ -197,6 +217,19 @@ export function SellerDashboard() {
                   <h3 className="font-semibold text-purple-900">Orders</h3>
                 </div>
                 <p className="text-sm text-purple-700">View buyer want lists</p>
+              </button>
+
+              <button
+                onClick={() => setCurrentView('analytics')}
+                className="bg-yellow-50 hover:bg-yellow-100 p-6 rounded-lg text-left transition-colors"
+              >
+                <div className="flex items-center mb-3">
+                  <svg className="w-6 h-6 text-yellow-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                  <h3 className="font-semibold text-yellow-900">Analytics</h3>
+                </div>
+                <p className="text-sm text-yellow-700">View performance metrics</p>
               </button>
             </div>
           </div>

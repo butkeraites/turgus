@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ProductWithDetails } from '../../types/product';
 import { productService } from '../../services/product.service';
 import { wantListService } from '../../services/wantList.service';
+import { analyticsService } from '../../services/analytics.service';
 import { PhotoGallery } from './PhotoGallery';
 import { LoadingSpinner } from '../shared/LoadingSpinner';
 import { CommentSection } from '../shared/CommentSection';
@@ -35,6 +36,8 @@ export function ProductDetail() {
         // Record the view
         try {
           await productService.recordView(productId);
+          // Also track for analytics
+          await analyticsService.trackProductView(productId);
         } catch (viewError) {
           console.error('Error recording view:', viewError);
           // Don't fail the whole component if view tracking fails

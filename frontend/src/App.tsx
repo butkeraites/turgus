@@ -11,9 +11,10 @@ import { SellerDashboard } from './components/dashboard/SellerDashboard';
 import { BuyerDashboard } from './components/dashboard/BuyerDashboard';
 import { ProductDetail } from './components/buyer/ProductDetail';
 import { ProtectedRoute, PublicRoute } from './components/auth/ProtectedRoute';
+import { analyticsService } from './services/analytics.service';
 
 function AppContent() {
-  // Handle viewport height changes on mobile
+  // Handle viewport height changes on mobile and start analytics tracking
   useEffect(() => {
     const setVH = () => {
       const vh = window.innerHeight * 0.01;
@@ -24,9 +25,13 @@ function AppContent() {
     window.addEventListener('resize', setVH);
     window.addEventListener('orientationchange', setVH);
 
+    // Start online session tracking
+    const stopOnlineTracking = analyticsService.startOnlineTracking();
+
     return () => {
       window.removeEventListener('resize', setVH);
       window.removeEventListener('orientationchange', setVH);
+      stopOnlineTracking();
     };
   }, []);
 

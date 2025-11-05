@@ -507,6 +507,28 @@ export class WantListRepository extends BaseRepository implements IWantListRepos
     try {
       await client.query('BEGIN')
       
+      // Get want list details for analytics
+      const getWantListQuery = `
+        SELECT 
+          wl.buyer_id,
+          COUNT(wli.id) as item_count,
+          SUM(p.price) as total_amount,
+          p.seller_id
+        FROM want_lists wl
+        JOIN want_list_items wli ON wl.id = wli.want_list_id
+        JOIN products p ON wli.product_id = p.id
+        WHERE wl.id = $1
+        GROUP BY wl.buyer_id, p.seller_id
+      `
+      const wantListResult = await client.query(getWantListQuery, [wantListId])
+      
+      if (wantListResult.rows.length === 0) {
+        await client.query('ROLLBACK')
+        return false
+      }
+      
+      const wantListData = wantListResult.rows[0]
+      
       // Get all products in the want list
       const getProductsQuery = `
         SELECT wli.product_id
@@ -533,6 +555,19 @@ export class WantListRepository extends BaseRepository implements IWantListRepos
         `
         await client.query(updateProductsQuery, [productIds])
       }
+      
+      // Record sale in analytics
+      const recordSaleQuery = `
+        INSERT INTO sales_analytics (seller_id, buyer_id, want_list_id, total_amount, item_count)
+        VALUES ($1, $2, $3, $4, $5)
+      `
+      await client.query(recordSaleQuery, [
+        wantListData.seller_id,
+        wantListData.buyer_id,
+        wantListId,
+        wantListData.total_amount,
+        wantListData.item_count
+      ])
       
       await client.query('COMMIT')
       
