@@ -10,6 +10,23 @@ import { BaseRepository } from './base'
 export class WantListRepository extends BaseRepository implements IWantListRepository {
 
   /**
+   * Find a want list by ID
+   */
+  async findById(wantListId: string): Promise<WantList | null> {
+    const query = `
+      SELECT * FROM want_lists 
+      WHERE id = $1
+    `
+    const result = await this.pool.query(query, [wantListId])
+    
+    if (result.rows.length === 0) {
+      return null
+    }
+    
+    return result.rows[0]
+  }
+
+  /**
    * Find or create an active want list for a buyer
    */
   async findOrCreateForBuyer(buyerId: string): Promise<WantList> {
