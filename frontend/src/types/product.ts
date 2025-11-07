@@ -5,40 +5,43 @@ export type ProductStatus = 'draft' | 'available' | 'reserved' | 'sold';
 export interface Category {
   id: string;
   name: string;
-  nameEn: string;
-  namePt: string;
-  createdAt: string;
+  name_en: string;
+  name_pt: string;
+  created_at: string;
 }
 
 export interface Product {
   id: string;
-  sellerId: string;
+  seller_id: string;
   title: string;
   description: string;
   price: number;
   status: ProductStatus;
-  availableAfter: string;
-  createdAt: string;
-  updatedAt: string;
-  publishedAt?: string;
+  available_after: string;
+  created_at: string;
+  updated_at: string;
+  published_at?: string;
 }
 
 export interface ProductPhoto {
   id: string;
-  productId?: string;
+  product_id?: string;
   filename: string;
-  originalName: string;
-  mimeType: string;
+  original_name: string;
+  mime_type: string;
   size: number;
-  sortOrder: number;
-  createdAt: string;
+  sort_order: number;
+  created_at: string;
 }
 
 export interface ProductWithDetails extends Product {
   photos: ProductPhoto[];
   categories: Category[];
-  isViewed?: boolean;
-  is_viewed?: boolean; // Backend returns this field name
+  seller?: {
+    id: string;
+    username: string;
+  };
+  is_viewed?: boolean;
 }
 
 export interface CreateProductData {

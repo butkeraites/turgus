@@ -224,7 +224,7 @@ export function ProductList({ onEditProduct, onDeleteProduct, onProductUpdated, 
                     {formatPrice(product.price)}
                   </span>
                   <span className="text-xs text-gray-500">
-                    {formatDate(product.createdAt)}
+                    {formatDate(product.created_at)}
                   </span>
                 </div>
 

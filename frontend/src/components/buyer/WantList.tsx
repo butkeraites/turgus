@@ -95,14 +95,14 @@ export function WantList() {
           <div>
             <h3 className="text-lg font-medium text-indigo-900">{t('wantList.title')}</h3>
             <p className="text-sm text-indigo-700">
-              {t('wantList.items', { count: wantList.itemCount })}
+              {t('wantList.items', { count: wantList.item_count })}
             </p>
           </div>
           <div className="text-right">
             <p className="text-2xl font-bold text-indigo-900">
-              {formatPrice(wantList.totalPrice)}
+              {formatPrice(wantList.total_price)}
             </p>
-            <p className="text-sm text-indigo-700">{t('wantList.total', { amount: formatPrice(wantList.totalPrice) })}</p>
+            <p className="text-sm text-indigo-700">{t('wantList.total', { amount: formatPrice(wantList.total_price) })}</p>
           </div>
         </div>
       </div>

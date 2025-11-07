@@ -4,21 +4,21 @@ import { ProductWithDetails } from './product';
 
 export interface WantListItem {
   id: string;
-  wantListId: string;
-  productId: string;
-  addedAt: string;
+  want_list_id: string;
+  product_id: string;
+  added_at: string;
   product: ProductWithDetails;
 }
 
 export interface WantList {
   id: string | null;
-  buyerId: string;
+  buyer_id: string;
   status: 'active' | 'completed' | 'cancelled';
   items: WantListItem[];
-  totalPrice: number;
-  itemCount: number;
-  createdAt: string | null;
-  updatedAt: string | null;
+  total_price: number;
+  item_count: number;
+  created_at: string | null;
+  updated_at: string | null;
 }
 
 export interface BuyerInfo {

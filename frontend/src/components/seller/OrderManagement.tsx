@@ -136,13 +136,13 @@ export function OrderManagement() {
           <div>
             <p className="text-indigo-700">Total Items</p>
             <p className="text-2xl font-bold text-indigo-900">
-              {wantLists.reduce((sum, wl) => sum + wl.itemCount, 0)}
+              {wantLists.reduce((sum, wl) => sum + wl.item_count, 0)}
             </p>
           </div>
           <div>
             <p className="text-indigo-700">Pending Revenue</p>
             <p className="text-2xl font-bold text-indigo-900">
-              {formatPrice(wantLists.reduce((sum, wl) => sum + wl.totalPrice, 0))}
+              {formatPrice(wantLists.reduce((sum, wl) => sum + wl.total_price, 0))}
             </p>
           </div>
           <div>
@@ -153,7 +153,7 @@ export function OrderManagement() {
         {wantLists.length > 0 && (
           <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-md">
             <p className="text-sm text-green-800">
-              💰 When you confirm orders, the total value of <strong>{formatPrice(wantLists.reduce((sum, wl) => sum + wl.totalPrice, 0))}</strong> will be recorded as received revenue.
+              💰 When you confirm orders, the total value of <strong>{formatPrice(wantLists.reduce((sum, wl) => sum + wl.total_price, 0))}</strong> will be recorded as received revenue.
             </p>
           </div>
         )}
@@ -175,17 +175,17 @@ export function OrderManagement() {
                       Order #{wantList.id?.slice(-8) || 'Unknown'}
                     </h3>
                     <p className="text-sm text-gray-600">
-                      Created {formatDate(wantList.createdAt!)}
+                      Created {formatDate(wantList.created_at!)}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-4">
                   <div className="text-right">
                     <p className="text-lg font-semibold text-gray-900">
-                      {formatPrice(wantList.totalPrice)}
+                      {formatPrice(wantList.total_price)}
                     </p>
                     <p className="text-sm text-gray-600">
-                      {wantList.itemCount} {wantList.itemCount === 1 ? 'item' : 'items'}
+                      {wantList.item_count} {wantList.item_count === 1 ? 'item' : 'items'}
                     </p>
                   </div>
                   <button
@@ -260,7 +260,7 @@ export function OrderManagement() {
                           {formatPrice(item.product.price)}
                         </p>
                         <p className="text-xs text-gray-500">
-                          Added {new Date(item.addedAt).toLocaleDateString()}
+                          Added {new Date(item.added_at).toLocaleDateString()}
                         </p>
                       </div>
                       

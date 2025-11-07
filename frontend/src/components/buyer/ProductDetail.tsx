@@ -46,7 +46,7 @@ export function ProductDetail() {
         // Check if product is in user's want list
         try {
           const wantList = await wantListService.getBuyerWantList();
-          const isInList = wantList.items.some(item => item.productId === productId);
+          const isInList = wantList.items.some(item => item.product_id === productId);
           setIsInWantList(isInList);
         } catch (wantListError) {
           console.error('Error checking want list:', wantListError);
@@ -85,7 +85,7 @@ export function ProductDetail() {
       setAddingToWantList(true);
       // Find the want list item ID for this product
       const wantList = await wantListService.getBuyerWantList();
-      const wantListItem = wantList.items.find(item => item.productId === product.id);
+      const wantListItem = wantList.items.find(item => item.product_id === product.id);
       
       if (wantListItem) {
         await wantListService.removeFromWantList(wantListItem.id);
@@ -249,14 +249,22 @@ export function ProductDetail() {
                 <div>
                   <span className="font-medium text-gray-600">Listed on:</span>
                   <span className="ml-2 text-gray-900">
-                    {formatDate(product.createdAt)}
+                    {formatDate(product.created_at)}
                   </span>
                 </div>
-                {product.publishedAt && (
+                {product.published_at && (
                   <div>
                     <span className="font-medium text-gray-600">Published on:</span>
                     <span className="ml-2 text-gray-900">
-                      {formatDate(product.publishedAt)}
+                      {formatDate(product.published_at)}
+                    </span>
+                  </div>
+                )}
+                {product.available_after && (
+                  <div>
+                    <span className="font-medium text-gray-600">Available from:</span>
+                    <span className="ml-2 text-gray-900">
+                      {formatDate(product.available_after)}
                     </span>
                   </div>
                 )}
@@ -273,7 +281,7 @@ export function ProductDetail() {
             <div className="border-t pt-6 mt-6">
               <CommentSection 
                 productId={product.id} 
-                sellerId={product.sellerId}
+                sellerId={product.seller_id}
               />
             </div>
           </div>
