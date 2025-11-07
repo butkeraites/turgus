@@ -17,6 +17,7 @@ export default defineConfig({
       '/api': {
         target: 'http://app-backend:3001',
         changeOrigin: true,
+        rewrite: (path) => path,
       },
     },
   },
