@@ -525,17 +525,19 @@ export class WantListRepository extends BaseRepository implements IWantListRepos
       await client.query('BEGIN')
       
       // Get want list details for analytics
+      // Note: This assumes all products in a want list belong to the same seller
+      // which is enforced by the business logic
       const getWantListQuery = `
         SELECT 
           wl.buyer_id,
-          COUNT(wli.id) as item_count,
+          COUNT(DISTINCT wli.id) as item_count,
           SUM(p.price) as total_amount,
-          p.seller_id
+          MIN(p.seller_id) as seller_id
         FROM want_lists wl
         JOIN want_list_items wli ON wl.id = wli.want_list_id
         JOIN products p ON wli.product_id = p.id
         WHERE wl.id = $1
-        GROUP BY wl.buyer_id, p.seller_id
+        GROUP BY wl.buyer_id
       `
       const wantListResult = await client.query(getWantListQuery, [wantListId])
       
@@ -545,6 +547,14 @@ export class WantListRepository extends BaseRepository implements IWantListRepos
       }
       
       const wantListData = wantListResult.rows[0]
+      
+      console.log('Completing want list:', {
+        wantListId,
+        buyerId: wantListData.buyer_id,
+        sellerId: wantListData.seller_id,
+        itemCount: wantListData.item_count,
+        totalAmount: wantListData.total_amount
+      })
       
       // Get all products in the want list
       const getProductsQuery = `

@@ -57,16 +57,16 @@ class WantListService {
       headers: this.getAuthHeaders(),
     });
     
-    // Transform backend response to match frontend types
+    // Return data as-is since types use snake_case
     return response.data.data.map((wantList: any) => ({
       id: wantList.id,
-      buyerId: wantList.buyer_id,
+      buyer_id: wantList.buyer_id,
       status: wantList.status,
       items: wantList.items || [],
-      totalPrice: wantList.total_price || 0,
-      itemCount: wantList.item_count || 0,
-      createdAt: wantList.created_at,
-      updatedAt: wantList.updated_at,
+      total_price: wantList.total_price || 0,
+      item_count: wantList.item_count || 0,
+      created_at: wantList.created_at,
+      updated_at: wantList.updated_at,
       buyer: wantList.buyer,
     }));
   }
