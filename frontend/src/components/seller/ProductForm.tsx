@@ -214,7 +214,7 @@ export function ProductForm({
           {t('product.form.availableAfter')}
         </label>
         <input
-          type="datetime-local"
+          type="date"
           id="available_after"
           value={formData.available_after}
           onChange={(e) => handleInputChange('available_after', e.target.value)}

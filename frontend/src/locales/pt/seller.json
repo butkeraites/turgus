@@ -19,7 +19,7 @@
       "categories": "Categorias",
       "selectCategories": "Selecionar categorias",
       "availableAfter": "Disponível Após",
-      "availableAfterHelp": "Opcional: Defina quando este produto estará disponível. Se não definido, estará disponível imediatamente.",
+      "availableAfterHelp": "Opcional: Defina a data em que este produto estará disponível. Se não definido, estará disponível imediatamente.",
       "createProduct": "Criar Produto",
       "updateProduct": "Atualizar Produto",
       "publishProduct": "Publicar Produto",

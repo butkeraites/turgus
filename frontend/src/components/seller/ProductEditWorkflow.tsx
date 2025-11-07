@@ -154,12 +154,17 @@ export function ProductEditWorkflow({ product, onProductUpdated, onCancel }: Pro
 
   const renderFormStep = () => {
     // Convert product data to form initial data
+    // Format available_after to date-only string (YYYY-MM-DD) for date input
+    const availableAfterDate = product.availableAfter 
+      ? new Date(product.availableAfter).toISOString().split('T')[0]
+      : undefined;
+    
     const initialData: Partial<UpdateProductData> = {
       title: product.title,
       description: product.description,
       price: Number(product.price),
       category_ids: product.categories.map(c => c.id),
-      available_after: product.availableAfter
+      available_after: availableAfterDate
     };
 
     return (
