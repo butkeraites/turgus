@@ -299,7 +299,7 @@ class FrontendMonitoring {
   }
 
   private async sendToBackend(endpoint: string, data: any) {
-    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+    const baseUrl = import.meta.env.VITE_API_URL || '/api';
     
     await fetch(`${baseUrl}${endpoint}`, {
       method: 'POST',
