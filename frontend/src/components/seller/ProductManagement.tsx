@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ProductList } from './ProductList';
 import { ProductCreationWorkflow } from './ProductCreationWorkflow';
+import { ProductEditWorkflow } from './ProductEditWorkflow';
 import { ProductWithDetails } from '../../types/product';
 import { productService } from '../../services/product.service';
 
@@ -93,6 +94,13 @@ export function ProductManagement({ onBack }: ProductManagementProps) {
     setRefreshTrigger(prev => prev + 1);
   };
 
+  const handleProductEdited = (product: ProductWithDetails) => {
+    console.log('Product updated:', product);
+    setCurrentView('list');
+    setEditingProduct(null);
+    setRefreshTrigger(prev => prev + 1);
+  };
+
   const handleCancel = () => {
     if (currentView === 'list') {
       onBack();
@@ -179,24 +187,13 @@ export function ProductManagement({ onBack }: ProductManagementProps) {
         );
       
       case 'edit':
-        return (
-          <div className="text-center py-12">
-            <div className="mx-auto w-16 h-16 text-gray-300 mb-4">
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                />
-              </svg>
-            </div>
-            <p className="text-gray-500 mb-4">Product editing coming soon...</p>
-            <p className="text-sm text-gray-400">
-              For now, you can delete and recreate products to make changes.
-            </p>
-          </div>
-        );
+        return editingProduct ? (
+          <ProductEditWorkflow
+            product={editingProduct}
+            onProductUpdated={handleProductEdited}
+            onCancel={handleCancel}
+          />
+        ) : null;
       
       default:
         return (
