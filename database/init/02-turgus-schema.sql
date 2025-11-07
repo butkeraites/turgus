@@ -61,6 +61,7 @@ CREATE TABLE products (
     description TEXT NOT NULL,
     price DECIMAL(10,2) NOT NULL CHECK (price > 0),
     status product_status DEFAULT 'draft',
+    available_after TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     published_at TIMESTAMP WITH TIME ZONE
@@ -145,6 +146,7 @@ CREATE INDEX idx_products_status ON products(status);
 CREATE INDEX idx_products_created_at ON products(created_at DESC);
 CREATE INDEX idx_products_published_at ON products(published_at DESC);
 CREATE INDEX idx_products_price ON products(price);
+CREATE INDEX idx_products_available_after ON products(available_after);
 
 -- Product photos indexes
 CREATE INDEX idx_product_photos_product_id ON product_photos(product_id);

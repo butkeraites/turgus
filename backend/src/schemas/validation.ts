@@ -66,6 +66,7 @@ export const ProductSchema = z.object({
   description: z.string().min(1),
   price: z.number().positive('Price must be positive'),
   status: ProductStatusSchema,
+  available_after: z.date(),
   created_at: z.date(),
   updated_at: z.date(),
   published_at: z.date().optional()
@@ -76,7 +77,8 @@ export const CreateProductSchema = z.object({
   description: z.string().min(1, 'Description is required'),
   price: z.number().positive('Price must be positive'),
   category_ids: z.array(UUIDSchema).min(1, 'At least one category is required'),
-  photo_ids: z.array(UUIDSchema).min(1, 'At least one photo is required')
+  photo_ids: z.array(UUIDSchema).min(1, 'At least one photo is required'),
+  available_after: z.coerce.date().optional()
 })
 
 export const UpdateProductSchema = CreateProductSchema.partial()

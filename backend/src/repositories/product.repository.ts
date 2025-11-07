@@ -20,15 +20,16 @@ export class ProductRepository extends BaseRepository implements IProductReposit
     return this.transaction(async (client) => {
       // Create the product
       const productQuery = `
-        INSERT INTO products (seller_id, title, description, price, status)
-        VALUES ($1, $2, $3, $4, 'draft')
+        INSERT INTO products (seller_id, title, description, price, status, available_after)
+        VALUES ($1, $2, $3, $4, 'draft', COALESCE($5, CURRENT_TIMESTAMP))
         RETURNING *
       `
       const productResult = await client.query(productQuery, [
         sellerId,
         data.title,
         data.description,
-        data.price
+        data.price,
+        data.available_after || null
       ])
       
       const product = productResult.rows[0]
@@ -131,6 +132,7 @@ async findByIdWithDetails(id: string, buyerId?: string): Promise<ProductWithDeta
     description: result.description,
     price: parseFloat(result.price),
     status: result.status,
+    available_after: result.available_after,
     created_at: result.created_at,
     updated_at: result.updated_at,
     published_at: result.published_at,
@@ -295,6 +297,7 @@ async update(id: string, data: UpdateProduct): Promise<Product | null> {
       description: row.description,
       price: parseFloat(row.price),
       status: row.status,
+      available_after: row.available_after,
       created_at: row.created_at,
       updated_at: row.updated_at,
       published_at: row.published_at,
@@ -429,6 +432,7 @@ async update(id: string, data: UpdateProduct): Promise<Product | null> {
       description: row.description,
       price: parseFloat(row.price),
       status: row.status,
+      available_after: row.available_after,
       created_at: row.created_at,
       updated_at: row.updated_at,
       published_at: row.published_at,

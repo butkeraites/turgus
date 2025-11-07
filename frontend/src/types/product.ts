@@ -17,6 +17,7 @@ export interface Product {
   description: string;
   price: number;
   status: ProductStatus;
+  availableAfter: string;
   createdAt: string;
   updatedAt: string;
   publishedAt?: string;
@@ -46,6 +47,7 @@ export interface CreateProductData {
   price: number;
   category_ids: string[];
   photo_ids: string[];
+  available_after?: string;
 }
 
 export interface UpdateProductData extends Partial<CreateProductData> {}

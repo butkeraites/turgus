@@ -17,6 +17,7 @@ interface FormData {
   description: string;
   price: string;
   category_ids: string[];
+  available_after: string;
 }
 
 interface FormErrors {
@@ -25,6 +26,7 @@ interface FormErrors {
   price?: string;
   category_ids?: string;
   photo_ids?: string;
+  available_after?: string;
 }
 
 export function ProductForm({
@@ -40,7 +42,8 @@ export function ProductForm({
     title: initialData?.title || '',
     description: initialData?.description || '',
     price: initialData?.price?.toString() || '',
-    category_ids: initialData?.category_ids || []
+    category_ids: initialData?.category_ids || [],
+    available_after: initialData?.available_after || ''
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -100,7 +103,8 @@ export function ProductForm({
         description: formData.description.trim(),
         price: parseFloat(formData.price),
         category_ids: formData.category_ids,
-        photo_ids: selectedPhotos
+        photo_ids: selectedPhotos,
+        ...(formData.available_after && { available_after: formData.available_after })
       };
 
       await onSubmit(productData);
@@ -202,6 +206,23 @@ export function ProductForm({
           />
         </div>
         {errors.price && <p className="mt-1 text-sm text-red-600">{errors.price}</p>}
+      </div>
+
+      {/* Available After */}
+      <div>
+        <label htmlFor="available_after" className="block text-sm font-medium text-gray-700">
+          {t('product.form.availableAfter')}
+        </label>
+        <input
+          type="datetime-local"
+          id="available_after"
+          value={formData.available_after}
+          onChange={(e) => handleInputChange('available_after', e.target.value)}
+          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+        />
+        <p className="mt-1 text-xs text-gray-500">
+          {t('product.form.availableAfterHelp')}
+        </p>
       </div>
 
       {/* Categories */}

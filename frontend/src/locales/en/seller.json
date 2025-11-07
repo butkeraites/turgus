@@ -18,6 +18,8 @@
       "price": "Price",
       "categories": "Categories",
       "selectCategories": "Select categories",
+      "availableAfter": "Available After",
+      "availableAfterHelp": "Optional: Set when this product will be available. If not set, it will be available immediately.",
       "createProduct": "Create Product",
       "updateProduct": "Update Product",
       "publishProduct": "Publish Product",

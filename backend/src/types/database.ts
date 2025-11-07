@@ -45,6 +45,7 @@ export interface Product {
   description: string
   price: number
   status: ProductStatus
+  available_after: Date
   created_at: Date
   updated_at: Date
   published_at?: Date
