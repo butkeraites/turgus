@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { PhotoManager } from './PhotoManager';
 import { ProductForm } from './ProductForm';
 import { CreateProductData, ProductWithDetails } from '../../types/product';
@@ -14,6 +15,7 @@ interface ProductCreationWorkflowProps {
 type WorkflowStep = 'photos' | 'form' | 'success';
 
 export function ProductCreationWorkflow({ onProductCreated, onCancel, preSelectedPhotos }: ProductCreationWorkflowProps) {
+  const { t } = useTranslation('seller');
   const [currentStep, setCurrentStep] = useState<WorkflowStep>(preSelectedPhotos && preSelectedPhotos.size > 0 ? 'form' : 'photos');
   const [selectedPhotos, setSelectedPhotos] = useState<Set<string>>(preSelectedPhotos || new Set());
   const [isLoading, setIsLoading] = useState(false);
@@ -22,7 +24,7 @@ export function ProductCreationWorkflow({ onProductCreated, onCancel, preSelecte
 
   const handlePhotosSelected = () => {
     if (selectedPhotos.size === 0) {
-      alert('Please select at least one photo before proceeding.');
+      alert(t('upload.selectPhotos'));
       return;
     }
     setCurrentStep('form');
@@ -44,7 +46,7 @@ export function ProductCreationWorkflow({ onProductCreated, onCancel, preSelecte
       onProductCreated(product);
     } catch (err: any) {
       console.error('Failed to create product:', err);
-      const errorMessage = err.response?.data?.message || 'Failed to create product. Please try again.';
+      const errorMessage = err.response?.data?.message || t('common:status.error');
       setError(errorMessage);
     } finally {
       setIsLoading(false);
@@ -60,7 +62,7 @@ export function ProductCreationWorkflow({ onProductCreated, onCancel, preSelecte
 
   const renderStepIndicator = () => (
     <div className="mb-8">
-      <nav aria-label="Progress">
+      <nav aria-label={t('workflow.progress')}>
         <ol className="flex items-center">
           <li className="relative">
             <div className={`flex items-center ${
@@ -73,7 +75,7 @@ export function ProductCreationWorkflow({ onProductCreated, onCancel, preSelecte
               }`}>
                 {currentStep === 'photos' ? '1' : '✓'}
               </div>
-              <span className="ml-2 text-sm font-medium">Select Photos</span>
+              <span className="ml-2 text-sm font-medium">{t('workflow.step1')}</span>
             </div>
           </li>
           
@@ -100,7 +102,7 @@ export function ProductCreationWorkflow({ onProductCreated, onCancel, preSelecte
               }`}>
                 {currentStep === 'success' ? '✓' : '2'}
               </div>
-              <span className="ml-2 text-sm font-medium">Product Details</span>
+              <span className="ml-2 text-sm font-medium">{t('workflow.step2')}</span>
             </div>
           </li>
           
@@ -121,7 +123,7 @@ export function ProductCreationWorkflow({ onProductCreated, onCancel, preSelecte
               }`}>
                 {currentStep === 'success' ? '✓' : '3'}
               </div>
-              <span className="ml-2 text-sm font-medium">Complete</span>
+              <span className="ml-2 text-sm font-medium">{t('workflow.step3')}</span>
             </div>
           </li>
         </ol>
@@ -132,9 +134,9 @@ export function ProductCreationWorkflow({ onProductCreated, onCancel, preSelecte
   const renderPhotosStep = () => (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Select Product Photos</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('workflow.selectPhotos')}</h2>
         <p className="text-gray-600">
-          Choose the photos you want to include with your product listing.
+          {t('workflow.selectPhotosDescription')}
         </p>
       </div>
 
@@ -149,14 +151,14 @@ export function ProductCreationWorkflow({ onProductCreated, onCancel, preSelecte
           onClick={onCancel}
           className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
         >
-          Cancel
+          {t('common:buttons.cancel')}
         </button>
         <button
           onClick={handlePhotosSelected}
           disabled={selectedPhotos.size === 0}
           className="px-6 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Continue with {selectedPhotos.size} photo{selectedPhotos.size !== 1 ? 's' : ''}
+          {t('workflow.continueWith', { count: selectedPhotos.size })}
         </button>
       </div>
     </div>

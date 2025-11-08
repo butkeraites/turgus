@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ProductWithDetails } from '../../types/product';
 import { productService } from '../../services/product.service';
 import { wantListService } from '../../services/wantList.service';
@@ -12,6 +13,7 @@ import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid';
 import { formatPrice } from '../../utils/currency';
 
 export function ProductDetail() {
+  const { t } = useTranslation('buyer');
   const { productId } = useParams<{ productId: string }>();
   const navigate = useNavigate();
   const [product, setProduct] = useState<ProductWithDetails | null>(null);
@@ -54,14 +56,14 @@ export function ProductDetail() {
         }
       } catch (err) {
         console.error('Error loading product:', err);
-        setError('Failed to load product details. Please try again.');
+        setError(t('product.failedToLoad'));
       } finally {
         setLoading(false);
       }
     };
 
     loadProduct();
-  }, [productId, navigate]);
+  }, [productId, navigate, t]);
 
   const handleAddToWantList = async () => {
     if (!product || addingToWantList) return;
@@ -72,7 +74,7 @@ export function ProductDetail() {
       setIsInWantList(true);
     } catch (err) {
       console.error('Error adding to want list:', err);
-      setError('Failed to add product to want list. Please try again.');
+      setError(t('product.failedToAddToWantList'));
     } finally {
       setAddingToWantList(false);
     }
@@ -93,7 +95,7 @@ export function ProductDetail() {
       }
     } catch (err) {
       console.error('Error removing from want list:', err);
-      setError('Failed to remove product from want list. Please try again.');
+      setError(t('product.failedToRemoveFromWantList'));
     } finally {
       setAddingToWantList(false);
     }
@@ -103,12 +105,12 @@ export function ProductDetail() {
 
   const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) {
-      return 'Not available';
+      return t('product.notAvailable');
     }
     
     const date = new Date(dateString);
     if (isNaN(date.getTime())) {
-      return 'Invalid date';
+      return t('product.invalidDate');
     }
     
     return date.toLocaleDateString('pt-PT', {
@@ -130,12 +132,12 @@ export function ProductDetail() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-600 mb-4">{error || 'Product not found'}</p>
+          <p className="text-red-600 mb-4">{error || t('product.productNotFound')}</p>
           <button
             onClick={() => navigate('/buyer')}
             className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
           >
-            Back to Products
+            {t('product.backToProducts')}
           </button>
         </div>
       </div>
@@ -155,7 +157,7 @@ export function ProductDetail() {
             className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
           >
             <ArrowLeftIcon className="w-5 h-5 mr-2" />
-            Back to Products
+            {t('product.backToProducts')}
           </button>
         </div>
 
@@ -186,7 +188,7 @@ export function ProductDetail() {
                     className="flex items-center px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors disabled:opacity-50"
                   >
                     <HeartIconSolid className="w-5 h-5 mr-2" />
-                    {addingToWantList ? 'Removing...' : 'Remove from Want List'}
+                    {addingToWantList ? t('product.removing') : t('product.removeFromWantList')}
                   </button>
                 ) : (
                   <button
@@ -199,7 +201,7 @@ export function ProductDetail() {
                     }`}
                   >
                     <HeartIcon className="w-5 h-5 mr-2" />
-                    {addingToWantList ? 'Adding...' : 'I Want This'}
+                    {addingToWantList ? t('product.adding') : t('product.iWantThis')}
                   </button>
                 )}
               </div>
@@ -214,21 +216,21 @@ export function ProductDetail() {
                   ? 'bg-yellow-100 text-yellow-800'
                   : 'bg-red-100 text-red-800'
               }`}>
-                {product.status === 'available' ? 'Available' : 
-                 product.status === 'reserved' ? 'Reserved' : 'Sold'}
+                {product.status === 'available' ? t('product.available') : 
+                 product.status === 'reserved' ? t('product.reserved') : t('product.sold')}
               </span>
             </div>
 
             {/* Description */}
             <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Description</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('product.description')}</h3>
               <p className="text-gray-700 whitespace-pre-wrap">{product.description}</p>
             </div>
 
             {/* Categories */}
             {product.categories && product.categories.length > 0 && (
               <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Categories</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('product.categories')}</h3>
                 <div className="flex flex-wrap gap-2">
                   {product.categories.map((category) => (
                     <span
@@ -244,17 +246,17 @@ export function ProductDetail() {
 
             {/* Product Details */}
             <div className="border-t pt-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Product Details</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('product.productDetails')}</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div>
-                  <span className="font-medium text-gray-600">Listed on:</span>
+                  <span className="font-medium text-gray-600">{t('product.listedOn')}</span>
                   <span className="ml-2 text-gray-900">
                     {formatDate(product.created_at)}
                   </span>
                 </div>
                 {product.published_at && (
                   <div>
-                    <span className="font-medium text-gray-600">Published on:</span>
+                    <span className="font-medium text-gray-600">{t('product.publishedOn')}</span>
                     <span className="ml-2 text-gray-900">
                       {formatDate(product.published_at)}
                     </span>
@@ -262,14 +264,14 @@ export function ProductDetail() {
                 )}
                 {product.available_after && (
                   <div>
-                    <span className="font-medium text-gray-600">Available from:</span>
+                    <span className="font-medium text-gray-600">{t('product.availableFrom')}</span>
                     <span className="ml-2 text-gray-900">
                       {formatDate(product.available_after)}
                     </span>
                   </div>
                 )}
                 <div>
-                  <span className="font-medium text-gray-600">Product ID:</span>
+                  <span className="font-medium text-gray-600">{t('product.productId')}</span>
                   <span className="ml-2 text-gray-900 font-mono text-xs">
                     {product.id}
                   </span>

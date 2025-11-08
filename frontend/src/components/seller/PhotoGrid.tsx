@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { UploadedPhoto } from '../../types/media';
 import { mediaService } from '../../services/media.service';
 
@@ -19,6 +20,7 @@ export function PhotoGrid({
   selectionMode = true,
   maxSelection 
 }: PhotoGridProps) {
+  const { t } = useTranslation('seller');
   const [deletingPhotos, setDeletingPhotos] = useState<Set<string>>(new Set());
 
   const handlePhotoClick = (photoId: string) => {
@@ -45,7 +47,7 @@ export function PhotoGrid({
     
     if (!onDeletePhoto) return;
     
-    const confirmed = window.confirm('Are you sure you want to delete this photo?');
+    const confirmed = window.confirm(t('photos.deletePhoto') + '?');
     if (!confirmed) return;
 
     setDeletingPhotos(prev => new Set(prev).add(photoId));
@@ -62,7 +64,7 @@ export function PhotoGrid({
       }
     } catch (error) {
       console.error('Failed to delete photo:', error);
-      alert('Failed to delete photo. Please try again.');
+      alert(t('photos.deletePhoto') + ' - ' + t('common:status.tryAgain'));
     } finally {
       setDeletingPhotos(prev => {
         const newSet = new Set(prev);
@@ -98,8 +100,8 @@ export function PhotoGrid({
             />
           </svg>
         </div>
-        <p className="text-gray-500">No photos uploaded yet</p>
-        <p className="text-sm text-gray-400 mt-1">Upload some photos to get started</p>
+        <p className="text-gray-500">{t('photos.noPhotos')}</p>
+        <p className="text-sm text-gray-400 mt-1">{t('photos.uploadToStart')}</p>
       </div>
     );
   }
@@ -110,14 +112,14 @@ export function PhotoGrid({
       {selectionMode && (
         <div className="flex items-center justify-between">
           <div className="text-sm text-gray-600">
-            {selectedPhotos.size} of {photos.length} photos selected
-            {maxSelection && ` (max ${maxSelection})`}
+            {t('photos.selected', { count: selectedPhotos.size, total: photos.length })}
+            {maxSelection && ` ${t('photos.maxSelection', { max: maxSelection })}`}
           </div>
           <button
             onClick={handleSelectAll}
             className="text-sm font-medium text-indigo-600 hover:text-indigo-700"
           >
-            {selectedPhotos.size === photos.length ? 'Deselect All' : 'Select All'}
+            {selectedPhotos.size === photos.length ? t('photos.deselectAll') : t('photos.selectAll')}
           </button>
         </div>
       )}
@@ -180,7 +182,7 @@ export function PhotoGrid({
                 <button
                   onClick={(e) => handleDeletePhoto(photo.id, e)}
                   className="absolute top-2 right-2 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition-colors"
-                  title="Delete photo"
+                  title={t('photos.deletePhoto')}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
@@ -216,17 +218,17 @@ export function PhotoGrid({
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-indigo-900">
-                {selectedPhotos.size} photo{selectedPhotos.size !== 1 ? 's' : ''} selected
+                {t('photos.photosSelected', { count: selectedPhotos.size })}
               </p>
               <p className="text-xs text-indigo-700">
-                Ready to create product with selected photos
+                {t('photos.readyToCreate')}
               </p>
             </div>
             <button
               onClick={() => onSelectionChange(new Set())}
               className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
             >
-              Clear Selection
+              {t('photos.clearSelection')}
             </button>
           </div>
         </div>

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { PhotoManager } from './PhotoManager';
 import { ProductForm } from './ProductForm';
 import { UpdateProductData, ProductWithDetails } from '../../types/product';
@@ -14,6 +15,7 @@ interface ProductEditWorkflowProps {
 type WorkflowStep = 'photos' | 'form' | 'success';
 
 export function ProductEditWorkflow({ product, onProductUpdated, onCancel }: ProductEditWorkflowProps) {
+  const { t } = useTranslation('seller');
   const [currentStep, setCurrentStep] = useState<WorkflowStep>('form');
   const [selectedPhotos, setSelectedPhotos] = useState<Set<string>>(
     new Set(product.photos.map(p => p.id))
@@ -24,7 +26,7 @@ export function ProductEditWorkflow({ product, onProductUpdated, onCancel }: Pro
 
   const handlePhotosSelected = () => {
     if (selectedPhotos.size === 0) {
-      alert('Please select at least one photo before proceeding.');
+      alert(t('upload.selectPhotos'));
       return;
     }
     setCurrentStep('form');
@@ -50,7 +52,7 @@ export function ProductEditWorkflow({ product, onProductUpdated, onCancel }: Pro
 
   const renderStepIndicator = () => (
     <div className="mb-8">
-      <nav aria-label="Progress">
+      <nav aria-label={t('workflow.progress')}>
         <ol className="flex items-center">
           <li className="relative">
             <div className={`flex items-center ${
@@ -63,7 +65,7 @@ export function ProductEditWorkflow({ product, onProductUpdated, onCancel }: Pro
               }`}>
                 {currentStep === 'photos' ? '1' : '✓'}
               </div>
-              <span className="ml-2 text-sm font-medium">Manage Photos</span>
+              <span className="ml-2 text-sm font-medium">{t('workflow.managePhotosButton')}</span>
             </div>
           </li>
           
@@ -90,7 +92,7 @@ export function ProductEditWorkflow({ product, onProductUpdated, onCancel }: Pro
               }`}>
                 {currentStep === 'success' ? '✓' : '2'}
               </div>
-              <span className="ml-2 text-sm font-medium">Product Details</span>
+              <span className="ml-2 text-sm font-medium">{t('workflow.step2')}</span>
             </div>
           </li>
           
@@ -111,7 +113,7 @@ export function ProductEditWorkflow({ product, onProductUpdated, onCancel }: Pro
               }`}>
                 {currentStep === 'success' ? '✓' : '3'}
               </div>
-              <span className="ml-2 text-sm font-medium">Complete</span>
+              <span className="ml-2 text-sm font-medium">{t('workflow.step3')}</span>
             </div>
           </li>
         </ol>
@@ -122,9 +124,9 @@ export function ProductEditWorkflow({ product, onProductUpdated, onCancel }: Pro
   const renderPhotosStep = () => (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Manage Product Photos</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('workflow.managePhotos')}</h2>
         <p className="text-gray-600">
-          Add, remove, or reorder photos for your product listing.
+          {t('workflow.managePhotosDescription')}
         </p>
       </div>
 
@@ -139,14 +141,14 @@ export function ProductEditWorkflow({ product, onProductUpdated, onCancel }: Pro
           onClick={onCancel}
           className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
         >
-          Cancel
+          {t('common:buttons.cancel')}
         </button>
         <button
           onClick={handlePhotosSelected}
           disabled={selectedPhotos.size === 0}
           className="px-6 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Continue with {selectedPhotos.size} photo{selectedPhotos.size !== 1 ? 's' : ''}
+          {t('workflow.continueWith', { count: selectedPhotos.size })}
         </button>
       </div>
     </div>
@@ -170,9 +172,9 @@ export function ProductEditWorkflow({ product, onProductUpdated, onCancel }: Pro
     return (
       <div className="space-y-6">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Edit Product Details</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('workflow.editProductDetails')}</h2>
           <p className="text-gray-600">
-            Update title, description, price, categories, or availability date.
+            {t('workflow.editProductDetailsDescription')}
           </p>
         </div>
 
@@ -193,13 +195,13 @@ export function ProductEditWorkflow({ product, onProductUpdated, onCancel }: Pro
 
         <div className="flex items-center justify-between mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
           <span className="text-sm text-blue-800">
-            Want to change photos?
+            {t('workflow.wantToChangePhotos')}
           </span>
           <button
             onClick={() => setCurrentStep('photos')}
             className="text-sm font-medium text-blue-600 hover:text-blue-700"
           >
-            Manage Photos
+            {t('workflow.managePhotosButton')}
           </button>
         </div>
 
@@ -209,7 +211,7 @@ export function ProductEditWorkflow({ product, onProductUpdated, onCancel }: Pro
           onSubmit={handleFormSubmit}
           onCancel={onCancel}
           isLoading={isLoading}
-          submitLabel="Update Product"
+          submitLabel={t('product.form.updateProduct')}
         />
       </div>
     );
@@ -224,34 +226,34 @@ export function ProductEditWorkflow({ product, onProductUpdated, onCancel }: Pro
       </div>
       
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Product Updated Successfully!</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('workflow.productUpdated')}</h2>
         <p className="text-gray-600">
-          Your changes to "{updatedProduct?.title}" have been saved.
+          {t('workflow.productUpdatedDescription', { title: updatedProduct?.title })}
         </p>
       </div>
 
       {updatedProduct && (
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-left max-w-md mx-auto">
-          <h3 className="font-medium text-gray-900 mb-2">Product Summary</h3>
+          <h3 className="font-medium text-gray-900 mb-2">{t('workflow.productSummary')}</h3>
           <dl className="space-y-1 text-sm">
             <div className="flex justify-between">
-              <dt className="text-gray-500">Title:</dt>
+              <dt className="text-gray-500">{t('workflow.summaryTitle')}</dt>
               <dd className="text-gray-900 font-medium">{updatedProduct.title}</dd>
             </div>
             <div className="flex justify-between">
-              <dt className="text-gray-500">Price:</dt>
+              <dt className="text-gray-500">{t('workflow.summaryPrice')}</dt>
               <dd className="text-gray-900 font-medium">{formatPrice(Number(updatedProduct.price))}</dd>
             </div>
             <div className="flex justify-between">
-              <dt className="text-gray-500">Status:</dt>
+              <dt className="text-gray-500">{t('workflow.summaryStatus')}</dt>
               <dd className="text-gray-900 font-medium capitalize">{updatedProduct.status}</dd>
             </div>
             <div className="flex justify-between">
-              <dt className="text-gray-500">Photos:</dt>
+              <dt className="text-gray-500">{t('workflow.summaryPhotos')}</dt>
               <dd className="text-gray-900 font-medium">{updatedProduct.photos?.length || 0}</dd>
             </div>
             <div className="flex justify-between">
-              <dt className="text-gray-500">Categories:</dt>
+              <dt className="text-gray-500">{t('workflow.summaryCategories')}</dt>
               <dd className="text-gray-900 font-medium">{updatedProduct.categories?.length || 0}</dd>
             </div>
           </dl>
@@ -263,7 +265,7 @@ export function ProductEditWorkflow({ product, onProductUpdated, onCancel }: Pro
           onClick={onCancel}
           className="px-6 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
         >
-          Back to Products
+          {t('workflow.backToProducts')}
         </button>
       </div>
     </div>
