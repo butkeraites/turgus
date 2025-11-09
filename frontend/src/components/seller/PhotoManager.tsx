@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { PhotoUploader } from './PhotoUploader';
 import { PhotoGrid } from './PhotoGrid';
 import { UploadedPhoto } from '../../types/media';
@@ -18,26 +18,39 @@ export function PhotoManager({
   showUploader = true 
 }: PhotoManagerProps) {
   const [photos, setPhotos] = useState<UploadedPhoto[]>([]);
+  const [allPhotos, setAllPhotos] = useState<Array<UploadedPhoto & { isAssigned: boolean; productId?: string; productTitle?: string }>>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showAll, setShowAll] = useState(false);
 
-  const loadPhotos = async () => {
+  const loadPhotos = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const unassignedPhotos = await mediaService.getUnassignedPhotos();
-      setPhotos(unassignedPhotos);
+      
+      if (showAll) {
+        // Load all photos (assigned and unassigned)
+        const all = await mediaService.getAllPhotos();
+        setAllPhotos(all);
+        // For selection, only show unassigned photos
+        const unassigned = all.filter(p => !p.isAssigned);
+        setPhotos(unassigned);
+      } else {
+        // Load only unassigned photos
+        const unassignedPhotos = await mediaService.getUnassignedPhotos();
+        setPhotos(unassignedPhotos);
+      }
     } catch (err) {
       console.error('Failed to load photos:', err);
       setError('Failed to load photos. Please try again.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [showAll]);
 
   useEffect(() => {
     loadPhotos();
-  }, []);
+  }, [loadPhotos]);
 
   const handlePhotosUploaded = (newPhotos: UploadedPhoto[]) => {
     setPhotos(prev => [...newPhotos, ...prev]);
@@ -115,20 +128,79 @@ export function PhotoManager({
       {/* Photo Grid Section */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-medium text-gray-900">
-            Available Photos
-            {photos.length > 0 && (
-              <span className="ml-2 text-sm font-normal text-gray-500">
-                ({photos.length} photo{photos.length !== 1 ? 's' : ''})
-              </span>
-            )}
-          </h3>
+          <div className="flex items-center space-x-4">
+            <h3 className="text-lg font-medium text-gray-900">
+              {showAll ? 'All Photos' : 'Available Photos'}
+              {showAll && allPhotos.length > 0 && (
+                <span className="ml-2 text-sm font-normal text-gray-500">
+                  ({allPhotos.filter(p => !p.isAssigned).length} available, {allPhotos.filter(p => p.isAssigned).length} assigned)
+                </span>
+              )}
+              {!showAll && photos.length > 0 && (
+                <span className="ml-2 text-sm font-normal text-gray-500">
+                  ({photos.length} photo{photos.length !== 1 ? 's' : ''})
+                </span>
+              )}
+            </h3>
+            <button
+              onClick={() => {
+                setShowAll(!showAll);
+                loadPhotos();
+              }}
+              className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+            >
+              {showAll ? 'Show Only Available' : 'Show All Photos'}
+            </button>
+          </div>
           {maxSelection && (
             <div className="text-sm text-gray-500">
               Select up to {maxSelection} photo{maxSelection !== 1 ? 's' : ''}
             </div>
           )}
         </div>
+        
+        {showAll && allPhotos.length > 0 && (
+          <div className="mb-4 space-y-4">
+            {/* Assigned Photos Section */}
+            {allPhotos.filter(p => p.isAssigned).length > 0 && (
+              <div>
+                <h4 className="text-sm font-medium text-gray-700 mb-2">
+                  Assigned to Products ({allPhotos.filter(p => p.isAssigned).length})
+                </h4>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                  {allPhotos.filter(p => p.isAssigned).map((photo) => (
+                    <div key={photo.id} className="relative group">
+                      <div className="aspect-square rounded-lg overflow-hidden bg-gray-100 border-2 border-green-300">
+                        <img
+                          src={mediaService.getThumbnailUrl(photo.id)}
+                          alt={photo.originalName}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="absolute top-1 right-1 bg-green-500 text-white text-xs px-1.5 py-0.5 rounded">
+                        ✓
+                      </div>
+                      {photo.productTitle && (
+                        <div className="mt-1 text-xs text-gray-600 truncate" title={photo.productTitle}>
+                          {photo.productTitle}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Unassigned Photos Section */}
+            {allPhotos.filter(p => !p.isAssigned).length > 0 && (
+              <div>
+                <h4 className="text-sm font-medium text-gray-700 mb-2">
+                  Available ({allPhotos.filter(p => !p.isAssigned).length})
+                </h4>
+              </div>
+            )}
+          </div>
+        )}
         
         <PhotoGrid
           photos={photos}

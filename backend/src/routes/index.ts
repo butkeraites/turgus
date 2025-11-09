@@ -49,6 +49,8 @@ router.get('/', (_req, res) => {
         getResponsiveInfo: 'GET /api/media/:id/responsive',
         deletePhoto: 'DELETE /api/media/:id',
         getUnassigned: 'GET /api/media/unassigned',
+        getAllPhotos: 'GET /api/media/all',
+        getProductPhotos: 'GET /api/media/product/:productId',
         cleanup: 'POST /api/media/cleanup'
       },
       products: {

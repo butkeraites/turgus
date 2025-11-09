@@ -67,6 +67,28 @@ class MediaService {
     return response.data.photos || [];
   }
 
+  async getAllPhotos(): Promise<Array<UploadedPhoto & { isAssigned: boolean; productId?: string; productTitle?: string }>> {
+    const token = localStorage.getItem('auth_token');
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    
+    const response = await axios.get(`${API_BASE_URL}/media/all`, {
+      headers
+    });
+
+    return response.data.photos || [];
+  }
+
+  async getProductPhotos(productId: string): Promise<UploadedPhoto[]> {
+    const token = localStorage.getItem('auth_token');
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    
+    const response = await axios.get(`${API_BASE_URL}/media/product/${productId}`, {
+      headers
+    });
+
+    return response.data.photos || [];
+  }
+
   async deletePhoto(photoId: string): Promise<void> {
     const token = localStorage.getItem('auth_token');
     const headers = token ? { Authorization: `Bearer ${token}` } : {};

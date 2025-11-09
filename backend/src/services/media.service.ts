@@ -228,10 +228,15 @@ export class MediaService {
   }
 
   async getUnassignedPhotos(): Promise<ProductPhoto[]> {
+    // Get all unassigned photos (no time filter)
     return repositories.productPhoto.getUnassignedPhotos()
   }
+  
+  async getAllPhotos(): Promise<Array<ProductPhoto & { is_assigned: boolean; product_title?: string }>> {
+    return repositories.productPhoto.getAllPhotos()
+  }
 
-  async cleanupOldUnassignedPhotos(olderThanHours: number = 24): Promise<number> {
+  async cleanupOldUnassignedPhotos(olderThanHours: number = 720): Promise<number> {
     // Get photos to delete
     const photosToDelete = await repositories.productPhoto.getUnassignedPhotos(olderThanHours)
     

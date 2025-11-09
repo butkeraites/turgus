@@ -85,14 +85,41 @@ export class ProductPhotoRepository extends BaseRepository implements IProductPh
     await this.query(query, [sortOrder, photoId])
   }
 
-  async getUnassignedPhotos(olderThanHours: number = 24): Promise<ProductPhoto[]> {
-    const query = `
-      SELECT * FROM product_photos 
-      WHERE product_id IS NULL 
-        AND created_at < NOW() - INTERVAL '${olderThanHours} hours'
-      ORDER BY created_at ASC
-    `
+  async getUnassignedPhotos(olderThanHours?: number): Promise<ProductPhoto[]> {
+    // If olderThanHours is provided, filter by age (for cleanup)
+    // Otherwise, return all unassigned photos regardless of age
+    let query: string
+    if (olderThanHours !== undefined) {
+      query = `
+        SELECT * FROM product_photos 
+        WHERE product_id IS NULL 
+          AND created_at < NOW() - INTERVAL '${olderThanHours} hours'
+        ORDER BY created_at ASC
+      `
+    } else {
+      query = `
+        SELECT * FROM product_photos 
+        WHERE product_id IS NULL 
+        ORDER BY created_at DESC
+      `
+    }
     return this.query<ProductPhoto>(query)
+  }
+  
+  /**
+   * Get all photos with their association status
+   */
+  async getAllPhotos(): Promise<Array<ProductPhoto & { is_assigned: boolean; product_title?: string }>> {
+    const query = `
+      SELECT 
+        pp.*,
+        CASE WHEN pp.product_id IS NOT NULL THEN true ELSE false END as is_assigned,
+        p.title as product_title
+      FROM product_photos pp
+      LEFT JOIN products p ON pp.product_id = p.id
+      ORDER BY pp.created_at DESC
+    `
+    return this.query<ProductPhoto & { is_assigned: boolean; product_title?: string }>(query)
   }
 
   async cleanupUnassignedPhotos(olderThanHours: number = 24): Promise<number> {

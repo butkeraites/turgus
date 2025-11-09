@@ -213,16 +213,82 @@ export class MediaController {
     }
   }
 
+  // GET /api/media/all - Get all photos with association status (seller only)
+  async getAllPhotos(_req: Request, res: Response): Promise<void> {
+    try {
+      const photos = await mediaService.getAllPhotos()
+
+      res.json({
+        photos: photos.map(photo => ({
+          id: photo.id,
+          filename: photo.filename,
+          originalName: photo.original_name,
+          mimeType: photo.mime_type,
+          size: photo.size,
+          sortOrder: photo.sort_order,
+          url: `/api/media/${photo.id}`,
+          thumbnailUrl: `/api/media/${photo.id}?size=thumb`,
+          createdAt: photo.created_at,
+          isAssigned: photo.is_assigned,
+          productId: photo.product_id || null,
+          productTitle: photo.product_title || null
+        })),
+        count: photos.length,
+        assigned: photos.filter(p => p.is_assigned).length,
+        unassigned: photos.filter(p => !p.is_assigned).length
+      })
+    } catch (error) {
+      console.error('Get all photos error:', error)
+      res.status(500).json({
+        error: 'Internal server error',
+        message: 'Failed to retrieve photos'
+      })
+    }
+  }
+
+  // GET /api/media/product/:productId - Get photos for a specific product
+  async getProductPhotos(req: Request, res: Response): Promise<void> {
+    try {
+      const { productId } = req.params
+      const photos = await mediaService.getProductPhotos(productId)
+
+      res.json({
+        productId,
+        photos: photos.map(photo => ({
+          id: photo.id,
+          filename: photo.filename,
+          originalName: photo.original_name,
+          mimeType: photo.mime_type,
+          size: photo.size,
+          sortOrder: photo.sort_order,
+          url: `/api/media/${photo.id}`,
+          thumbnailUrl: `/api/media/${photo.id}?size=thumb`,
+          createdAt: photo.created_at
+        })),
+        count: photos.length
+      })
+    } catch (error) {
+      console.error('Get product photos error:', error)
+      res.status(500).json({
+        error: 'Internal server error',
+        message: 'Failed to retrieve product photos'
+      })
+    }
+  }
+
   // POST /api/media/cleanup - Cleanup old unassigned photos (seller only)
+  // Default changed to 720 hours (30 days) to prevent accidental deletion
   async cleanupUnassignedPhotos(req: Request, res: Response): Promise<void> {
     try {
-      const { olderThanHours = 24 } = req.body
+      // Default to 30 days instead of 24 hours to prevent accidental deletion
+      const { olderThanHours = 720 } = req.body
 
       const deletedCount = await mediaService.cleanupOldUnassignedPhotos(olderThanHours)
 
       res.json({
         message: 'Cleanup completed successfully',
-        deletedCount
+        deletedCount,
+        olderThanHours
       })
     } catch (error) {
       console.error('Cleanup error:', error)

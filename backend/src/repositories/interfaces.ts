@@ -83,6 +83,7 @@ export interface IProductPhotoRepository {
   delete(id: string): Promise<boolean>
   updateSortOrder(photoId: string, sortOrder: number): Promise<void>
   getUnassignedPhotos(olderThanHours?: number): Promise<ProductPhoto[]>
+  getAllPhotos(): Promise<Array<ProductPhoto & { is_assigned: boolean; product_title?: string }>>
   cleanupUnassignedPhotos(olderThanHours: number): Promise<number>
 }
 
