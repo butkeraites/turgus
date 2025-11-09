@@ -41,10 +41,26 @@ export const getBuyerWantList = async (req: AuthenticatedRequest, res: Response)
       return
     }
 
+    // Add queue positions to each item
+    const itemsWithQueueInfo = await Promise.all(
+      wantList.items.map(async (item) => {
+        const position = await repositories.wantList.getBuyerPositionInQueue(req.user.userId, item.product_id)
+        const queue = await repositories.wantList.getProductInterestQueue(item.product_id)
+        return {
+          ...item,
+          queue_position: position,
+          total_in_queue: queue.length
+        }
+      })
+    )
+
     res.json({
       success: true,
       message: 'Want list retrieved successfully',
-      data: wantList
+      data: {
+        ...wantList,
+        items: itemsWithQueueInfo
+      }
     })
   } catch (error) {
     console.error('Get buyer want list error:', error)
@@ -91,10 +107,11 @@ export const addToWantList = async (req: AuthenticatedRequest, res: Response): P
       return
     }
 
-    if (product.status !== 'available') {
+    // Allow interest even if product is reserved (queue system)
+    if (product.status === 'sold') {
       res.status(400).json({
         error: 'Product unavailable',
-        message: 'This product is not available for reservation'
+        message: 'This product has already been sold'
       })
       return
     }
@@ -111,11 +128,19 @@ export const addToWantList = async (req: AuthenticatedRequest, res: Response): P
 
     // Add product to want list
     const wantListItem = await repositories.wantList.addItem(req.user.userId, product_id)
+    
+    // Get position in queue
+    const position = await repositories.wantList.getBuyerPositionInQueue(req.user.userId, product_id)
+    const queue = await repositories.wantList.getProductInterestQueue(product_id)
 
     res.status(201).json({
       success: true,
       message: 'Product added to want list successfully',
-      data: wantListItem
+      data: {
+        ...wantListItem,
+        queue_position: position,
+        total_in_queue: queue.length
+      }
     })
   } catch (error) {
     console.error('Add to want list error:', error)
@@ -378,6 +403,133 @@ export const cleanupEmptyWantLists = async (req: AuthenticatedRequest, res: Resp
     res.status(500).json({
       error: 'Internal server error',
       message: 'An error occurred while cleaning up empty want lists'
+    })
+  }
+}
+
+/**
+ * Get buyer's position in queue for a specific product
+ */
+export const getBuyerQueuePosition = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    if (!req.user || req.user.userType !== 'buyer') {
+      res.status(403).json({
+        error: 'Access denied',
+        message: 'Buyer access required'
+      })
+      return
+    }
+
+    const productIdValidation = UUIDSchema.safeParse(req.params.productId)
+    if (!productIdValidation.success) {
+      res.status(400).json({
+        error: 'Validation error',
+        message: 'Invalid product ID format'
+      })
+      return
+    }
+
+    const productId = productIdValidation.data
+    const position = await repositories.wantList.getBuyerPositionInQueue(req.user.userId, productId)
+    const queue = await repositories.wantList.getProductInterestQueue(productId)
+
+    res.json({
+      success: true,
+      message: 'Queue position retrieved successfully',
+      data: {
+        position: position,
+        total_in_queue: queue.length,
+        is_first_in_queue: position === 1
+      }
+    })
+  } catch (error) {
+    console.error('Get buyer queue position error:', error)
+    res.status(500).json({
+      error: 'Internal server error',
+      message: 'An error occurred while retrieving queue position'
+    })
+  }
+}
+
+/**
+ * Get all queue positions for a buyer across all products
+ */
+export const getBuyerAllQueuePositions = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    if (!req.user || req.user.userType !== 'buyer') {
+      res.status(403).json({
+        error: 'Access denied',
+        message: 'Buyer access required'
+      })
+      return
+    }
+
+    const positions = await repositories.wantList.getBuyerQueuePositions(req.user.userId)
+
+    res.json({
+      success: true,
+      message: 'Queue positions retrieved successfully',
+      data: positions
+    })
+  } catch (error) {
+    console.error('Get buyer queue positions error:', error)
+    res.status(500).json({
+      error: 'Internal server error',
+      message: 'An error occurred while retrieving queue positions'
+    })
+  }
+}
+
+/**
+ * Get interest queue for a product (seller only)
+ */
+export const getProductInterestQueue = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    if (!req.user || req.user.userType !== 'seller') {
+      res.status(403).json({
+        error: 'Access denied',
+        message: 'Seller access required'
+      })
+      return
+    }
+
+    const productIdValidation = UUIDSchema.safeParse(req.params.productId)
+    if (!productIdValidation.success) {
+      res.status(400).json({
+        error: 'Validation error',
+        message: 'Invalid product ID format'
+      })
+      return
+    }
+
+    const productId = productIdValidation.data
+
+    // Verify product belongs to seller
+    const product = await repositories.product.findById(productId)
+    if (!product || product.seller_id !== req.user.userId) {
+      res.status(404).json({
+        error: 'Product not found',
+        message: 'Product not found or does not belong to you'
+      })
+      return
+    }
+
+    const queue = await repositories.wantList.getProductInterestQueue(productId)
+
+    res.json({
+      success: true,
+      message: 'Interest queue retrieved successfully',
+      data: {
+        product_id: productId,
+        queue: queue,
+        total_interested: queue.length
+      }
+    })
+  } catch (error) {
+    console.error('Get product interest queue error:', error)
+    res.status(500).json({
+      error: 'Internal server error',
+      message: 'An error occurred while retrieving interest queue'
     })
   }
 }

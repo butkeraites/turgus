@@ -108,6 +108,10 @@ export interface IWantListRepository {
   cancel(wantListId: string): Promise<boolean>
   complete(wantListId: string): Promise<boolean>
   cleanupEmptyWantLists(): Promise<number>
+  // Interest queue methods
+  getBuyerPositionInQueue(buyerId: string, productId: string): Promise<number | null>
+  getProductInterestQueue(productId: string): Promise<Array<{ buyer_id: string; position: number; buyer_name: string; created_at: Date }>>
+  getBuyerQueuePositions(buyerId: string): Promise<Array<{ product_id: string; position: number; total_in_queue: number }>>
 }
 
 // Product Comment Repository Interface

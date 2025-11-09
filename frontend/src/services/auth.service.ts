@@ -16,6 +16,22 @@ class AuthService {
     if (this.token) {
       this.setAuthHeader(this.token);
     }
+    
+    // Add response interceptor to handle auth errors silently
+    axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        // Silently handle 401/403 for /auth/me endpoint when checking initial auth state
+        if (
+          (error.response?.status === 401 || error.response?.status === 403) &&
+          error.config?.url?.includes('/auth/me')
+        ) {
+          // Don't log these errors to console - they're expected when user is not authenticated
+          return Promise.reject(error);
+        }
+        return Promise.reject(error);
+      }
+    );
   }
 
   private setAuthHeader(token: string) {
@@ -89,13 +105,25 @@ class AuthService {
   }
 
   async getCurrentUser(): Promise<User> {
-    const response = await axios.get(`${API_BASE_URL}/auth/me`);
-    const user = response.data.user;
-    // Map userType to type for frontend compatibility
-    return {
-      ...user,
-      type: user.userType
-    };
+    if (!this.token) {
+      throw new Error('No token available');
+    }
+    
+    try {
+      const response = await axios.get(`${API_BASE_URL}/auth/me`);
+      const user = response.data.data || response.data.user;
+      // Map userType to type for frontend compatibility
+      return {
+        ...user,
+        type: user.userType
+      };
+    } catch (error: any) {
+      // If token is invalid, clear it
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        this.logout();
+      }
+      throw error;
+    }
   }
 
   async refreshToken(): Promise<string> {

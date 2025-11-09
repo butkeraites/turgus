@@ -293,20 +293,13 @@ export class WantListRepository extends BaseRepository implements IWantListRepos
       }
       
       // Add item to want list
+      // Note: The trigger will automatically add to interest queue and update product status
       const insertQuery = `
         INSERT INTO want_list_items (want_list_id, product_id)
         VALUES ($1, $2)
         RETURNING *
       `
       const insertResult = await client.query(insertQuery, [wantList.id, productId])
-      
-      // Update product status to reserved
-      const updateProductQuery = `
-        UPDATE products 
-        SET status = 'reserved', updated_at = CURRENT_TIMESTAMP
-        WHERE id = $1 AND status = 'available'
-      `
-      await client.query(updateProductQuery, [productId])
       
       await client.query('COMMIT')
       
@@ -343,6 +336,7 @@ export class WantListRepository extends BaseRepository implements IWantListRepos
       }
       
       // Remove item from want list
+      // Note: The trigger will automatically remove from interest queue and promote next buyer
       const deleteQuery = `
         DELETE FROM want_list_items wli
         USING want_lists wl
@@ -352,14 +346,6 @@ export class WantListRepository extends BaseRepository implements IWantListRepos
           AND wl.status = 'active'
       `
       const deleteResult = await client.query(deleteQuery, [buyerId, productId])
-      
-      // Update product status back to available
-      const updateProductQuery = `
-        UPDATE products 
-        SET status = 'available', updated_at = CURRENT_TIMESTAMP
-        WHERE id = $1 AND status = 'reserved'
-      `
-      await client.query(updateProductQuery, [productId])
       
       await client.query('COMMIT')
       
@@ -397,19 +383,12 @@ export class WantListRepository extends BaseRepository implements IWantListRepos
       const productId = findResult.rows[0].product_id
       
       // Remove the item
+      // Note: The trigger will automatically remove from interest queue and promote next buyer
       const deleteQuery = `
         DELETE FROM want_list_items 
         WHERE id = $1
       `
       const deleteResult = await client.query(deleteQuery, [itemId])
-      
-      // Update product status back to available
-      const updateProductQuery = `
-        UPDATE products 
-        SET status = 'available', updated_at = CURRENT_TIMESTAMP
-        WHERE id = $1 AND status = 'reserved'
-      `
-      await client.query(updateProductQuery, [productId])
       
       await client.query('COMMIT')
       
@@ -623,5 +602,63 @@ export class WantListRepository extends BaseRepository implements IWantListRepos
     
     const result = await this.pool.query(query)
     return result.rowCount || 0
+  }
+
+  /**
+   * Get buyer's position in the interest queue for a specific product
+   */
+  async getBuyerPositionInQueue(buyerId: string, productId: string): Promise<number | null> {
+    const query = `
+      SELECT position
+      FROM product_interests
+      WHERE buyer_id = $1 AND product_id = $2
+    `
+    const result = await this.pool.query(query, [buyerId, productId])
+    
+    if (result.rows.length === 0) {
+      return null
+    }
+    
+    return result.rows[0].position
+  }
+
+  /**
+   * Get the complete interest queue for a product (for sellers)
+   */
+  async getProductInterestQueue(productId: string): Promise<Array<{ buyer_id: string; position: number; buyer_name: string; created_at: Date }>> {
+    const query = `
+      SELECT 
+        pi.buyer_id,
+        pi.position,
+        ba.name as buyer_name,
+        pi.created_at
+      FROM product_interests pi
+      JOIN buyer_accounts ba ON pi.buyer_id = ba.id
+      WHERE pi.product_id = $1
+      ORDER BY pi.position ASC
+    `
+    const result = await this.pool.query(query, [productId])
+    return result.rows
+  }
+
+  /**
+   * Get all queue positions for a buyer across all products
+   */
+  async getBuyerQueuePositions(buyerId: string): Promise<Array<{ product_id: string; position: number; total_in_queue: number }>> {
+    const query = `
+      SELECT 
+        pi.product_id,
+        pi.position,
+        (
+          SELECT COUNT(*) 
+          FROM product_interests 
+          WHERE product_id = pi.product_id
+        ) as total_in_queue
+      FROM product_interests pi
+      WHERE pi.buyer_id = $1
+      ORDER BY pi.position ASC
+    `
+    const result = await this.pool.query(query, [buyerId])
+    return result.rows
   }
 }

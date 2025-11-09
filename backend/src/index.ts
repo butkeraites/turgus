@@ -3,14 +3,28 @@ import cors from 'cors'
 import helmet from 'helmet'
 import morgan from 'morgan'
 import dotenv from 'dotenv'
+import path from 'path'
 import { connectDB, disconnectDB } from './config/database'
 import { runMigrations } from './migrations'
 import apiRoutes from './routes'
 import { requestTracker, errorTracker, healthCheck, metricsEndpoint } from './middleware/monitoring'
 import logger, { logInfo, logError } from './utils/logger'
 
-// Load environment variables
-dotenv.config()
+// Load environment variables based on NODE_ENV
+const envFile = process.env.NODE_ENV === 'production' 
+  ? '.env.production'
+  : process.env.NODE_ENV === 'staging'
+  ? '.env.staging'
+  : '.env.development'
+
+// Determine backend directory (works in both dev and production)
+// __dirname points to src/ in dev, dist/ in production
+const backendDir = path.resolve(__dirname, '..')
+
+// Load environment file from backend directory
+dotenv.config({ path: path.resolve(backendDir, envFile) })
+// Also load .env as fallback
+dotenv.config({ path: path.resolve(backendDir, '.env') })
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -81,6 +95,16 @@ const startServer = async () => {
         healthCheck: `http://localhost:${PORT}/health`,
         metrics: `http://localhost:${PORT}/metrics`
       })
+    }).on('error', (error: NodeJS.ErrnoException) => {
+      if (error.code === 'EADDRINUSE') {
+        logError(`Port ${PORT} is already in use`, error)
+        console.error(`❌ Port ${PORT} is already in use. Please stop the process using this port or change the PORT environment variable.`)
+        console.error(`💡 To find the process: lsof -ti:${PORT} or ss -tulpn | grep :${PORT}`)
+        process.exit(1)
+      } else {
+        logError('Failed to start server', error)
+        throw error
+      }
     })
   } catch (error) {
     logError('Failed to start server', error as Error)
@@ -105,13 +129,27 @@ process.on('SIGTERM', async () => {
 
 // Handle uncaught exceptions
 process.on('uncaughtException', (error) => {
+  console.error('❌ Uncaught Exception:', error)
+  console.error('Stack:', error.stack)
   logError('Uncaught exception', error)
-  process.exit(1)
+  // Give time for logs to be written
+  setTimeout(() => {
+    process.exit(1)
+  }, 1000)
 })
 
 process.on('unhandledRejection', (reason, promise) => {
-  logError('Unhandled rejection', new Error(`Promise: ${promise}, Reason: ${reason}`))
-  process.exit(1)
+  const error = reason instanceof Error 
+    ? reason 
+    : new Error(`Unhandled rejection: ${String(reason)}`)
+  console.error('❌ Unhandled Rejection:', error)
+  console.error('Promise:', promise)
+  console.error('Reason:', reason)
+  logError('Unhandled rejection', error)
+  // Give time for logs to be written
+  setTimeout(() => {
+    process.exit(1)
+  }, 1000)
 })
 
 export default app
