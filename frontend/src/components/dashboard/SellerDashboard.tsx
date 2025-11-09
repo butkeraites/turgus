@@ -16,6 +16,8 @@ export function SellerDashboard() {
 
   const handleProductCreated = (product: ProductWithDetails) => {
     console.log('Product created:', product);
+    // Clear photo selection after product creation so seller can create new product with remaining photos
+    setSelectedPhotos(new Set());
     // Could show a success message or redirect to product management
   };
 

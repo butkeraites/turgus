@@ -43,6 +43,8 @@ export function ProductCreationWorkflow({ onProductCreated, onCancel, preSelecte
       const product = await productService.createProduct(productData);
       setCreatedProduct(product);
       setCurrentStep('success');
+      // Clear photo selection after successful product creation
+      setSelectedPhotos(new Set());
       onProductCreated(product);
     } catch (err: any) {
       console.error('Failed to create product:', err);
