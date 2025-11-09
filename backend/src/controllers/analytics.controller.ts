@@ -196,6 +196,15 @@ export const trackWantListAdd = async (req: AuthenticatedRequest, res: Response)
       return
     }
 
+    // Validate productId format
+    if (!productId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(productId)) {
+      res.status(400).json({
+        error: 'Invalid product ID',
+        message: 'Product ID must be a valid UUID'
+      })
+      return
+    }
+
     await analyticsService.trackWantListAdd(productId, req.user.userId)
 
     res.json({
@@ -204,9 +213,11 @@ export const trackWantListAdd = async (req: AuthenticatedRequest, res: Response)
     })
   } catch (error) {
     console.error('Track want list add error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     res.status(500).json({
       error: 'Internal server error',
-      message: 'An error occurred while tracking want list add'
+      message: 'An error occurred while tracking want list add',
+      details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
     })
   }
 }

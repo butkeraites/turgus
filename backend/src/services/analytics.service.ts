@@ -118,18 +118,20 @@ export class AnalyticsService {
       await client.query('BEGIN')
       
       // Update product metrics - increment want list adds
+      // Use ON CONFLICT with the unique constraint on product_id
       await client.query(`
         INSERT INTO product_metrics (product_id, want_list_adds)
         VALUES ($1, 1)
         ON CONFLICT (product_id) 
         DO UPDATE SET 
-          want_list_adds = product_metrics.want_list_adds + 1,
+          want_list_adds = COALESCE(product_metrics.want_list_adds, 0) + 1,
           last_updated = CURRENT_TIMESTAMP
       `, [productId])
       
       await client.query('COMMIT')
     } catch (error) {
       await client.query('ROLLBACK')
+      console.error('Error tracking want list add:', error)
       throw error
     } finally {
       client.release()
