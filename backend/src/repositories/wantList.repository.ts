@@ -153,7 +153,8 @@ export class WantListRepository extends BaseRepository implements IWantListRepos
    * Find all want lists containing seller's products
    */
   async findBySeller(sellerId: string): Promise<WantListWithBuyer[]> {
-    // Simplified query to avoid complex aggregations that might cause issues
+    // Only return want lists where the buyer is first in queue (position 1) for each product
+    // This ensures only buyers who should have orders are shown to the seller
     const query = `
       SELECT DISTINCT
         wl.id,
@@ -169,6 +170,9 @@ export class WantListRepository extends BaseRepository implements IWantListRepos
       JOIN buyer_accounts ba ON wl.buyer_id = ba.id
       JOIN want_list_items wli ON wl.id = wli.want_list_id
       JOIN products p ON wli.product_id = p.id
+      JOIN product_interests pi ON pi.product_id = p.id 
+        AND pi.want_list_id = wl.id 
+        AND pi.position = 1
       WHERE wl.status = 'active' AND p.seller_id = $1
       ORDER BY wl.created_at DESC
     `
@@ -178,8 +182,9 @@ export class WantListRepository extends BaseRepository implements IWantListRepos
     // For each want list, get the items separately
     const wantLists: WantListWithBuyer[] = []
     
-    for (const row of result.rows) {
+      for (const row of result.rows) {
       // Get items for this want list
+      // Only include items where the buyer is first in queue (position 1)
       const itemsQuery = `
         SELECT 
           wli.id,
@@ -197,6 +202,9 @@ export class WantListRepository extends BaseRepository implements IWantListRepos
           p.published_at
         FROM want_list_items wli
         JOIN products p ON wli.product_id = p.id
+        JOIN product_interests pi ON pi.product_id = p.id 
+          AND pi.want_list_id = wli.want_list_id 
+          AND pi.position = 1
         WHERE wli.want_list_id = $1 AND p.seller_id = $2
         ORDER BY wli.added_at DESC
       `
@@ -501,6 +509,7 @@ export class WantListRepository extends BaseRepository implements IWantListRepos
     const client = await this.pool.connect()
     
     try {
+      console.log('Starting want list completion for:', wantListId)
       await client.query('BEGIN')
       
       // Get want list details for analytics
@@ -511,28 +520,43 @@ export class WantListRepository extends BaseRepository implements IWantListRepos
           wl.buyer_id,
           COUNT(DISTINCT wli.id) as item_count,
           SUM(p.price) as total_amount,
-          MIN(p.seller_id) as seller_id
+          (SELECT p2.seller_id FROM want_list_items wli2 
+           JOIN products p2 ON wli2.product_id = p2.id 
+           WHERE wli2.want_list_id = wl.id 
+           LIMIT 1) as seller_id
         FROM want_lists wl
         JOIN want_list_items wli ON wl.id = wli.want_list_id
         JOIN products p ON wli.product_id = p.id
         WHERE wl.id = $1
-        GROUP BY wl.buyer_id
+        GROUP BY wl.buyer_id, wl.id
       `
+      console.log('Querying want list details...')
       const wantListResult = await client.query(getWantListQuery, [wantListId])
       
       if (wantListResult.rows.length === 0) {
+        console.log('Want list not found:', wantListId)
         await client.query('ROLLBACK')
         return false
       }
       
       const wantListData = wantListResult.rows[0]
       
+      // Ensure values are valid numbers
+      const totalAmount = parseFloat(wantListData.total_amount) || 0
+      const itemCount = parseInt(wantListData.item_count) || 0
+      
+      if (!wantListData.seller_id || !wantListData.buyer_id) {
+        console.error('Missing seller_id or buyer_id:', wantListData)
+        await client.query('ROLLBACK')
+        throw new Error('Invalid want list data: missing seller_id or buyer_id')
+      }
+      
       console.log('Completing want list:', {
         wantListId,
         buyerId: wantListData.buyer_id,
         sellerId: wantListData.seller_id,
-        itemCount: wantListData.item_count,
-        totalAmount: wantListData.total_amount
+        itemCount,
+        totalAmount
       })
       
       // Get all products in the want list
@@ -541,44 +565,64 @@ export class WantListRepository extends BaseRepository implements IWantListRepos
         FROM want_list_items wli
         WHERE wli.want_list_id = $1
       `
+      console.log('Getting products from want list...')
       const productsResult = await client.query(getProductsQuery, [wantListId])
+      console.log('Found products:', productsResult.rows.length)
       
-      // Update want list status
-      const updateWantListQuery = `
-        UPDATE want_lists 
-        SET status = 'completed', updated_at = CURRENT_TIMESTAMP
-        WHERE id = $1
-      `
-      const updateResult = await client.query(updateWantListQuery, [wantListId])
-      
-      // Update all products to sold
+      // Update all products to sold FIRST (before updating want list status)
+      // This prevents the trigger from trying to promote buyers for products that are already sold
       if (productsResult.rows.length > 0) {
         const productIds = productsResult.rows.map(row => row.product_id)
         const updateProductsQuery = `
           UPDATE products 
           SET status = 'sold', updated_at = CURRENT_TIMESTAMP
-          WHERE id = ANY($1) AND status = 'reserved'
+          WHERE id = ANY($1) AND status IN ('reserved', 'available')
         `
-        await client.query(updateProductsQuery, [productIds])
+        console.log('Updating products to sold...', productIds)
+        const productsUpdateResult = await client.query(updateProductsQuery, [productIds])
+        console.log('Products updated to sold, rows affected:', productsUpdateResult.rowCount)
       }
+      
+      // Update want list status AFTER products are marked as sold
+      // Note: This will trigger handle_want_list_status_change which will promote next buyers
+      // But since products are already sold, the trigger should handle it gracefully
+      const updateWantListQuery = `
+        UPDATE want_lists 
+        SET status = 'completed', updated_at = CURRENT_TIMESTAMP
+        WHERE id = $1
+      `
+      console.log('Updating want list status to completed...')
+      const updateResult = await client.query(updateWantListQuery, [wantListId])
+      console.log('Want list updated, rows affected:', updateResult.rowCount)
       
       // Record sale in analytics
       const recordSaleQuery = `
         INSERT INTO sales_analytics (seller_id, buyer_id, want_list_id, total_amount, item_count)
         VALUES ($1, $2, $3, $4, $5)
       `
+      console.log('Recording sale analytics...', {
+        seller_id: wantListData.seller_id,
+        buyer_id: wantListData.buyer_id,
+        want_list_id: wantListId,
+        total_amount: totalAmount,
+        item_count: itemCount
+      })
       await client.query(recordSaleQuery, [
         wantListData.seller_id,
         wantListData.buyer_id,
         wantListId,
-        wantListData.total_amount,
-        wantListData.item_count
+        totalAmount,
+        itemCount
       ])
+      console.log('Sale analytics recorded')
       
+      console.log('Committing transaction...')
       await client.query('COMMIT')
+      console.log('Transaction committed successfully')
       
       return (updateResult.rowCount || 0) > 0
     } catch (error) {
+      console.error('Error in complete want list:', error)
       await client.query('ROLLBACK')
       throw error
     } finally {

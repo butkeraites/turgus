@@ -42,7 +42,18 @@ DECLARE
     next_interest RECORD;
     next_want_list_id UUID;
     remaining_count INTEGER;
+    product_status VARCHAR(20);
 BEGIN
+    -- Check product status first - don't promote if product is already sold
+    SELECT status INTO product_status
+    FROM products
+    WHERE id = p_product_id;
+    
+    IF product_status = 'sold' THEN
+        -- Product is already sold, don't promote anyone
+        RETURN NULL;
+    END IF;
+    
     -- Count remaining interests after removal
     SELECT COUNT(*) INTO remaining_count
     FROM product_interests
@@ -89,9 +100,12 @@ BEGIN
     END IF;
     
     -- Update product to remain reserved (now for the next buyer)
-    UPDATE products
-    SET status = 'reserved', updated_at = CURRENT_TIMESTAMP
-    WHERE id = p_product_id;
+    -- Only if product is not already sold
+    IF product_status != 'sold' THEN
+        UPDATE products
+        SET status = 'reserved', updated_at = CURRENT_TIMESTAMP
+        WHERE id = p_product_id AND status != 'sold';
+    END IF;
     
     RETURN next_interest.want_list_id;
 END;

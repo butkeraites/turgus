@@ -298,6 +298,110 @@ export const cancelWantList = async (req: AuthenticatedRequest, res: Response): 
 }
 
 /**
+ * Complete buyer's own want list (buyer action - only if all products are in position 1)
+ */
+export const completeBuyerWantList = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    if (!req.user || req.user.userType !== 'buyer') {
+      res.status(403).json({
+        error: 'Access denied',
+        message: 'Buyer access required'
+      })
+      return
+    }
+
+    // Get buyer's want list
+    const wantList = await repositories.wantList.findByBuyer(req.user.userId)
+    
+    if (!wantList || wantList.items.length === 0) {
+      res.status(404).json({
+        error: 'Want list not found',
+        message: 'Your want list is empty or does not exist'
+      })
+      return
+    }
+
+    // Verify that buyer is in position 1 for ALL products in the want list
+    for (const item of wantList.items) {
+      const position = await repositories.wantList.getBuyerPositionInQueue(req.user.userId, item.product_id)
+      if (position !== 1) {
+        res.status(400).json({
+          error: 'Not first in queue',
+          message: 'You can only complete your selection when you are first in the queue for all products. Some products are still waiting in the queue.'
+        })
+        return
+      }
+    }
+
+    // Get want list details before completing for analytics
+    // Use the wantList from findByBuyer which already has total_price and item_count
+    const totalPrice = wantList.total_price || 0
+    const itemCount = wantList.item_count || wantList.items.length
+
+    // Complete the want list
+    const completed = await repositories.wantList.complete(wantList.id)
+
+    if (!completed) {
+      res.status(500).json({
+        error: 'Internal server error',
+        message: 'Failed to complete the want list'
+      })
+      return
+    }
+
+    // Record sale analytics if we have the want list details
+    if (wantList.items.length > 0) {
+      try {
+        // Get seller ID from first product
+        // The product object from findByBuyer includes seller_id
+        const firstItem = wantList.items[0]
+        const product = firstItem.product as any // Type assertion needed as ProductWithPhotos may not expose seller_id in type
+        const sellerId = product?.seller_id
+        
+        if (sellerId) {
+          await analyticsService.recordSale(
+            sellerId,
+            req.user.userId,
+            wantList.id,
+            totalPrice,
+            itemCount
+          )
+        }
+      } catch (analyticsError) {
+        console.error('Failed to record sale analytics:', analyticsError)
+        // Don't fail the completion if analytics fails
+      }
+    }
+
+    res.json({
+      success: true,
+      message: 'Selection completed successfully. The seller will process your order.',
+      data: {
+        wantListId: wantList.id,
+        status: 'completed'
+      }
+    })
+  } catch (error) {
+    console.error('Complete buyer want list error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const errorStack = error instanceof Error ? error.stack : undefined
+    
+    console.error('Error details:', {
+      message: errorMessage,
+      stack: errorStack,
+      userId: req.user?.userId,
+      userType: req.user?.userType
+    })
+    
+    res.status(500).json({
+      error: 'Internal server error',
+      message: 'An error occurred while completing your selection',
+      details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
+    })
+  }
+}
+
+/**
  * Complete a want list (seller action)
  */
 export const completeWantList = async (req: AuthenticatedRequest, res: Response): Promise<void> => {

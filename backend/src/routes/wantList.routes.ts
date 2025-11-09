@@ -6,6 +6,7 @@ import {
   getSellerWantLists,
   cancelWantList,
   completeWantList,
+  completeBuyerWantList,
   cleanupEmptyWantLists,
   getBuyerQueuePosition,
   getBuyerAllQueuePositions,
@@ -19,6 +20,7 @@ const router = Router()
 router.get('/', authenticateToken, requireBuyer, getBuyerWantList) // Get buyer's want list
 router.post('/items', authenticateToken, requireBuyer, addToWantList) // Add product to want list
 router.delete('/items/:id', authenticateToken, requireBuyer, removeFromWantList) // Remove product from want list
+router.post('/complete', authenticateToken, requireBuyer, completeBuyerWantList) // Complete buyer's own want list
 router.get('/queue/position/:productId', authenticateToken, requireBuyer, getBuyerQueuePosition) // Get position in queue for a product
 router.get('/queue/positions', authenticateToken, requireBuyer, getBuyerAllQueuePositions) // Get all queue positions
 

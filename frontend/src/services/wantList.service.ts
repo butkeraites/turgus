@@ -29,9 +29,9 @@ class WantListService {
     };
   }
 
-  async addToWantList(productId: string): Promise<void> {
+  async addToWantList(productId: string): Promise<{ queue_position: number | null; total_in_queue: number }> {
     const data: AddToWantListData = { product_id: productId };
-    await axios.post(`${API_BASE_URL}/want-lists/items`, data, {
+    const response = await axios.post(`${API_BASE_URL}/want-lists/items`, data, {
       headers: this.getAuthHeaders(),
     });
     
@@ -43,10 +43,33 @@ class WantListService {
     } catch (error) {
       console.warn('Failed to track want list add:', error);
     }
+    
+    // Return queue information
+    return {
+      queue_position: response.data.data?.queue_position || null,
+      total_in_queue: response.data.data?.total_in_queue || 0
+    };
+  }
+  
+  async getQueuePosition(productId: string): Promise<{ position: number | null; total: number }> {
+    const response = await axios.get(`${API_BASE_URL}/want-lists/queue/position/${productId}`, {
+      headers: this.getAuthHeaders(),
+    });
+    
+    return {
+      position: response.data.data?.position || null,
+      total: response.data.data?.total_in_queue || 0
+    };
   }
 
   async removeFromWantList(itemId: string): Promise<void> {
     await axios.delete(`${API_BASE_URL}/want-lists/items/${itemId}`, {
+      headers: this.getAuthHeaders(),
+    });
+  }
+
+  async completeBuyerWantList(): Promise<void> {
+    await axios.post(`${API_BASE_URL}/want-lists/complete`, {}, {
       headers: this.getAuthHeaders(),
     });
   }

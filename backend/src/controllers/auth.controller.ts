@@ -107,20 +107,28 @@ export const buyerLogin = async (req: Request, res: Response): Promise<void> => 
     console.log('=== BUYER LOGIN DEBUG ===')
     console.log('Request body:', req.body)
     console.log('Content-Type:', req.headers['content-type'])
+    console.log('Body keys:', Object.keys(req.body || {}))
     console.log('========================')
     
     const { telephone, password } = req.body
 
-    if (!telephone || !password) {
-      console.log('Missing fields - telephone:', !!telephone, 'password:', !!password)
+    // Trim telephone to handle whitespace
+    const trimmedTelephone = telephone ? String(telephone).trim() : ''
+
+    if (!trimmedTelephone || !password) {
+      console.log('Missing fields - telephone:', !!trimmedTelephone, 'password:', !!password)
       res.status(400).json({
         error: 'Validation error',
-        message: 'Telephone and password are required'
+        message: 'Telephone and password are required',
+        details: {
+          telephone: trimmedTelephone ? 'provided' : 'missing',
+          password: password ? 'provided' : 'missing'
+        }
       })
       return
     }
 
-    const authResult = await authenticateBuyer({ telephone, password })
+    const authResult = await authenticateBuyer({ telephone: trimmedTelephone, password })
 
     res.json({
       success: true,
